@@ -1,13 +1,14 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container-fluid">
-    <a href="/app/graph" class="navbar-brand">
-      <!-- <img src="" alt="logo"> -->
-      <div style="background-color: #aaa; width: 50px; height: 50px"></div>
-    </a>
-    <div class="navbar-nav">
-      <a class="nav-link header-link active" aria-current="page" href="/app/graph">Home</a>
-      <a class="nav-link header-link" href="#">link1</a>
-      <a class="nav-link header-link" href="#">link2</a>
-    </div>
+  <a class="navbar-brand ms-3" href="/app/graph">
+    <img class="" src="../../../assets/images/square-grey.svg" width="50" alt="logo">
+  </a>
+  <div class="navbar-nav ms-auto">
+    <a class="nav-link header-link active" aria-current="page" href="/app/graph">Home</a>
+    <a class="nav-link header-link" href="#">link1</a>
+    <a class="nav-link header-link" href="#">link2</a>
   </div>
+  <a class="nav-link" href={{user_path}}>
+    <!-- se loggato user-path è il path per l'area utente, altrimenti "/login" -->
+    <img src="../../../assets/images/square-grey.svg" width="50" alt="user">
+  </a>
 </nav>
