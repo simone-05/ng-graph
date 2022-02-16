@@ -1,12 +1,15 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ContentComponent } from './content/content.component';
+import { CreateComponent } from './main/graph/create/create.component';
+import { ListComponent } from './main/graph/list/list.component';
+import { WorkspaceComponent } from './main/graph/workspace/workspace.component';
 
 const routes: Routes = [
-  {path: "graph", children: [
-    {path: "list", component: ContentComponent},
-    {path: "create"},
-    {path: "edit/:graph_id"},
+  {path: "graph", component: ContentComponent, children: [
+    {path: "list", component: ListComponent},
+    {path: "create", component: CreateComponent},
+    {path: "edit/:graph_id", component: WorkspaceComponent},
     {path: "", redirectTo: "list"}
   ]},
   {path: "", redirectTo: "graph"}

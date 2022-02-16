@@ -1,3 +1,4 @@
+import { UsersService } from './../../shared/services/users.service';
 import { Component, Input, OnInit } from '@angular/core';
 
 @Component({
@@ -6,11 +7,10 @@ import { Component, Input, OnInit } from '@angular/core';
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent implements OnInit {
-  // @Input() isLogged: boolean;
-  user_path: string;
+  username: string;
 
-  constructor() {
-    this.user_path = "";
+  constructor(private users: UsersService) {
+    this.username = sessionStorage.getItem("username") || "";
    }
 
   ngOnInit(): void {

@@ -2,3 +2,17 @@
 
 /* Importing Bootstrap SCSS file. */
 @import '~bootstrap/scss/bootstrap';
+
+.my-grey {
+    color: #ccc;
+}
+
+.whiten:hover {
+  background-color: white;
+  color: black;
+}
+
+.whiten-red:hover {
+  background-color: white;
+  color: red;
+}
