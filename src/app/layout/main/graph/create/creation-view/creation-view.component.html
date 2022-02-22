@@ -6,7 +6,7 @@
 ></ngx-graph> -->
 
 <ngx-graph class="chart-container"
-  [view]="[970, 491]"
+  [update$]="update$"
   [nodes]="nodes"
   [links]="edges"
   (select)="onNodeSelect($event)">

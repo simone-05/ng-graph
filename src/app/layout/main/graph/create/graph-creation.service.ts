@@ -1,24 +1,26 @@
+import { CreationViewComponent } from './creation-view/creation-view.component';
 import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Edge, ClusterNode } from '@swimlane/ngx-graph';
+import { DatePipe } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GraphCreationService {
-  graph: Graph = {name: "", description: "", nodes: [], edges: []};
+  graph: Graph = {date: "", name: "", description: "", nodes: [], edges: []};
   graph$: BehaviorSubject<Graph|any> = new BehaviorSubject<Graph|any>(null);
 
-  constructor() { }
+  constructor(private datePipe: DatePipe) { }
 
   createGraph(graph_name: string, graph_description: string) : boolean {
     if (localStorage.getItem(graph_name)) return false;
+    this.graph.date = this.datePipe.transform(new Date(), "YYYY-MM-dd HH:mm:ss")||"";
     this.graph.name = graph_name;
     this.graph.description = graph_description;
     this.graph.nodes = [];
     this.graph.edges = [];
     this.graph$.next(this.graph);
-    // this.saveGraphInStorage();
     return true;
   }
 
@@ -26,7 +28,6 @@ export class GraphCreationService {
     if (node && !this.graph.nodes.find(nodo => nodo.id == node.id)) {
       this.graph.nodes.push(node);
       this.graph$.next(this.graph);
-      // this.saveGraphInStorage();
       return true;
     }
     return false;
@@ -36,21 +37,13 @@ export class GraphCreationService {
     if (edge && !this.graph.edges.find(arco => arco.id == edge.id)) {
       this.graph.edges.push(edge);
       this.graph$.next(this.graph);
-      // this.saveGraphInStorage();
       return true;
     }
     return false;
   }
 
   saveGraphInStorage() {
-    // console.log("ok1");
-    if (this.graph) {
-      console.log("si");
-    } else {console.log("no");}
-    console.log(this.graph);
-    console.log(JSON.stringify(this.graph));
     localStorage.setItem(this.graph.name, JSON.stringify(this.graph));
-    // console.log("ok2");
   }
 }
 
@@ -61,6 +54,7 @@ export interface Node {
 }
 
 export interface Graph {
+  date: string,   //messa come prima verrà salvata come prima nello storage => ordinate per data
   name: string,
   description: string,
   nodes: Node[],

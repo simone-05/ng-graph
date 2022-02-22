@@ -2,11 +2,11 @@
   <div class="row">
 
     <div class="col-4 bg-dark">
-      <app-sidebar></app-sidebar>
+      <app-sidebar (updateGraphView)="switcher()" ></app-sidebar>
     </div>
 
-    <div class="col-8">
-      <app-creation-view></app-creation-view>
+    <div class="col-8" style="padding: 0;height: 74.3vh;">
+      <app-creation-view [update]="switch"></app-creation-view>
     </div>
 
   </div>

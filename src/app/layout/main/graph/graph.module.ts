@@ -11,7 +11,6 @@ import { CreationViewComponent } from './create/creation-view/creation-view.comp
 import { NgxGraphModule } from '@swimlane/ngx-graph';
 
 
-
 @NgModule({
   declarations: [
     CreateComponent,

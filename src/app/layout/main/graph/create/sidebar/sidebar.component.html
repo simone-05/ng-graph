@@ -9,32 +9,34 @@
   </div>
 
   <div class="form-floating">
-    <textarea class="my-2 form-control" id="graphDescriptionInput" placeholder="Graph description" formControlName="graph_desc"></textarea>
+    <textarea class="h-25 my-2 form-control" id="graphDescriptionInput" placeholder="Graph description" formControlName="graph_desc"></textarea>
     <label for="graphDescriptionInput">Graph description</label>
-    <p class="text-danger text-start" *ngIf="!graphInitForm.controls['graph_desc'].valid">graph description required</p>
+    <!-- <p class="text-danger text-start" *ngIf="!graphInitForm.controls['graph_desc'].valid">graph description required</p> -->
   </div>
 
-  <button class="w-50 mt-5 btn btn-lg btn-primary" [ngClass]="{'disabled': !graphInitForm.controls['graph_name'].valid}" type="submit" (click)="tryCreate()">Create</button>
+  <button class="w-50 mt-5 btn btn-lg btn-primary" [ngClass]="{'disabled': !graphInitForm.controls['graph_name'].valid}" type="submit" (click)="tryCreate()">Next</button>
 </form>
 
 <ng-template #creation>
-  <div class="row">
-    <div class="col-12 mx-3">
+  <div class="row mx-3" style="height: 74.3vh;">
+    <div class="col-12">
 
-      <h3 class="ms-2 my-4 text-white">{{graphCreationService.graph.name}}</h3>
+      <h3 class="my-4 text-white">{{graphCreationService.graph.name}}</h3>
 
-      <div class="col-8 ms-2 pt-2">
-        <select name="graph_elements" (change)="changedView($event)" class="form-select my-bg-grey">
-          <option selected value="node">Add Node</option>
-          <option value="edge">Add Edge</option>
-        </select>
+      <div class="col-12 mt-2">
+        <!-- <select name="graph_elements" (change)="changedView($event)" class="form-select my-bg-grey"> -->
+          <!-- <option selected value="node">Add Node</option> -->
+          <!-- <option value="edge">Add Edge</option> -->
+        <!-- </select> -->
+        <button class="btn w-50" [ngClass]="this.view=='node'? 'btn-secondary':'btn-outline-secondary'" (click)="changedView('node')">Add Node</button>
+        <button class="btn w-50" [ngClass]="this.view=='edge'? 'btn-secondary':'btn-outline-secondary'" (click)="changedView('edge')">Add Edge</button>
       </div>
 
-      <div class="d-flex-column my-grey mt-4 ms-2">
+      <div class="d-flex-column col-8 my-grey mt-4">
         <div *ngIf="view=='node';else edgeview">
           <form [formGroup]="newNodeForm" novalidate class="d-flex-column">
-            <input type="text" class="form-control w-50 my-2" formControlName="node_id" placeholder="node id">
-            <input type="text" class="form-control w-75 my-2" formControlName="node_label" placeholder="node label">
+            <input type="text" class="form-control my-2" formControlName="node_id" placeholder="node id">
+            <input type="text" class="form-control my-2" formControlName="node_label" placeholder="node label">
 
             <div class="my-3">
               <input type="radio" class="form-check-radio" id="type_cond" formControlName="node_type" value="cond">
@@ -43,23 +45,28 @@
               <label class="mx-2" for="type_task">task</label>
             </div>
 
-            <button class="mt-3 w-50 btn btn-success" [ngClass]="{'disabled': !newNodeForm.controls['node_id'].valid || !newNodeForm.controls['node_label'].valid || !newNodeForm.controls['node_type'].valid}" type="submit" (click)="tryAddNode()">Create</button>
+            <button class="mt-3 w-50 btn btn-primary" [ngClass]="{'disabled': !newNodeForm.controls['node_id'].valid || !newNodeForm.controls['node_type'].valid}" type="submit" (click)="tryAddNode()">Add</button>
           </form>
         </div>
 
         <ng-template #edgeview>
           <form [formGroup]="newEdgeForm" novalidate class="d-flex-column">
-            <input type="text" class="form-control w-50 my-2" formControlName="edge_id" placeholder="edge id">
-            <input type="text" class="form-control w-75 my-2" formControlName="edge_source" placeholder="edge source">
-            <input type="text" class="form-control w-75 my-2" formControlName="edge_target" placeholder="edge target">
+            <input type="text" class="form-control my-2" formControlName="edge_id" placeholder="edge id">
+            <input type="text" class="form-control my-2" formControlName="edge_source" placeholder="edge source">
+            <input type="text" class="form-control my-2" formControlName="edge_target" placeholder="edge target">
+            <input type="text" class="form-control my-2" formControlName="edge_label" placeholder="edge label">
 
-            <button class="mt-3 w-50 btn btn-success"
+            <button class="mt-3 w-50 btn btn-primary"
               [ngClass]="{'disabled': !newEdgeForm.controls['edge_id'].valid || !newEdgeForm.controls['edge_source'].valid || !newEdgeForm.controls['edge_target'].valid}"
-              type="submit" (click)="tryAddEdge()">Create</button>
+              type="submit" (click)="tryAddEdge()">Add</button>
           </form>
         </ng-template>
       </div>
 
+    </div>
+
+    <div class="col-12 mt-auto mb-3">
+      <button class="btn btn-success w-100" (click)="saveGraph()">Create Graph</button>
     </div>
   </div>
 </ng-template>

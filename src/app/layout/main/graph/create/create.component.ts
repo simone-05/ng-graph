@@ -6,10 +6,14 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./create.component.scss']
 })
 export class CreateComponent implements OnInit {
+  switch = false;
 
   constructor() { }
 
   ngOnInit(): void {
   }
 
+  switcher() {
+    this.switch = !this.switch;
+  }
 }
