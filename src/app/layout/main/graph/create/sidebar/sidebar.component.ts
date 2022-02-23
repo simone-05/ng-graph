@@ -3,7 +3,6 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { GraphCreationService, Node } from './../graph-creation.service';
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { Edge } from '@swimlane/ngx-graph';
-import { validateLocaleAndSetLanguage } from 'typescript';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,7 +15,7 @@ export class SidebarComponent implements OnInit {
   graphInitForm: FormGroup;
   newNodeForm: FormGroup;
   newEdgeForm: FormGroup;
-  @Output() updateGraphView = new EventEmitter<any>();
+  @Output() updateGraphView = new EventEmitter<number>();
 
   constructor(public graphCreationService: GraphCreationService, private formbuilder: FormBuilder, private router: Router) {
     this.view = 'node';
@@ -60,7 +59,7 @@ export class SidebarComponent implements OnInit {
     let node_type = this.newNodeForm.controls["node_type"].value;
     let node: Node = {id: node_id, label: node_label, type: node_type};
     this.graphCreationService.addNode(node);
-    this.updateGraphView.emit();
+    this.updateGraphView.emit(1);
   }
 
   tryAddEdge() {
@@ -70,7 +69,7 @@ export class SidebarComponent implements OnInit {
     let edge_label = this.newEdgeForm.controls["edge_label"].value;
     let edge: Edge = {id: edge_id, source: edge_source, target: edge_target, label: edge_label};
     this.graphCreationService.addEdge(edge);
-    this.updateGraphView.emit();
+    this.updateGraphView.emit(1);
   }
 
   saveGraph() {
@@ -80,5 +79,17 @@ export class SidebarComponent implements OnInit {
 
   changedView(insertChoice: string) {
     this.view = insertChoice;
+  }
+
+  reload_page() {
+    location.reload();
+  }
+
+  centerGraph() {
+    this.updateGraphView.emit(2);
+  }
+
+  fitGraph() {
+    this.updateGraphView.emit(3);
   }
 }

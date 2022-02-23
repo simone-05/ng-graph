@@ -2,10 +2,10 @@
   <div class="row">
 
     <div class="col-4 bg-dark">
-      <app-sidebar (updateGraphView)="switcher()" ></app-sidebar>
+      <app-sidebar (updateGraphView)="switcher($event)"></app-sidebar>
     </div>
 
-    <div class="col-8" style="padding: 0;height: 74.3vh;">
+    <div class="col-8" style="padding: 0;">
       <app-creation-view [update]="switch"></app-creation-view>
     </div>
 

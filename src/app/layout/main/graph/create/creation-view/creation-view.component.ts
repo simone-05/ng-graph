@@ -12,8 +12,10 @@ import { Subject } from 'rxjs';
 export class CreationViewComponent implements OnInit, OnChanges{
   nodes = [];
   edges = [];
-  @Input() update: boolean = false;
+  @Input() update: number = 0;
   update$: Subject<boolean> = new Subject();
+  center$: Subject<boolean> = new Subject();
+  zoomToFit$: Subject<boolean> = new Subject();
 
   constructor(public graphCreationService: GraphCreationService) {
     this.graphCreationService.graph$.subscribe();
@@ -23,6 +25,22 @@ export class CreationViewComponent implements OnInit, OnChanges{
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    switch (this.update) {
+      case 1:
+        this.updateGraph();
+        break;
+      case 2:
+        this.center$.next(true)
+        break;
+      case 3:
+        this.zoomToFit$.next(true)
+        break;
+      default:
+        break;
+    }
+  }
+
+  updateGraph() {
     this.nodes = this.graphCreationService.graph$.getValue().nodes;
     this.edges = this.graphCreationService.graph$.getValue().edges;
     this.update$.next(true);

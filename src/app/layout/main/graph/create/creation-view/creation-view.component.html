@@ -7,6 +7,8 @@
 
 <ngx-graph class="chart-container"
   [update$]="update$"
+  [center$]="center$"
+  [zoomToFit$]="zoomToFit$"
   [nodes]="nodes"
   [links]="edges"
   (select)="onNodeSelect($event)">

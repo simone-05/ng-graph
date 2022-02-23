@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 
 @Component({
   selector: 'app-create',
@@ -6,14 +6,18 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./create.component.scss']
 })
 export class CreateComponent implements OnInit {
-  switch = false;
+  switch = 0;
 
-  constructor() { }
+  constructor() {
+  }
 
   ngOnInit(): void {
   }
 
-  switcher() {
-    this.switch = !this.switch;
+  switcher(x: number) {
+    this.switch = x;
+    setTimeout(() => {
+      this.switch = 0;
+    }, 100);
   }
 }
