@@ -8,7 +8,7 @@ import { WorkspaceComponent } from './main/graph/workspace/workspace.component';
 const routes: Routes = [
   {path: "graph", component: ContentComponent, children: [
     {path: "list", component: ListComponent},
-    {path: "create", component: CreateComponent},
+    {path: "create", component: CreateComponent, data: {footer: false}},
     {path: "edit/:graph_id", component: WorkspaceComponent},
     {path: "", redirectTo: "list"}
   ]},

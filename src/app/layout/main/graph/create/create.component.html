@@ -1,2 +1,13 @@
-<app-sidebar></app-sidebar>
-<app-creation-view></app-creation-view>
+<div class="container m-0">
+  <div class="row">
+
+    <div class="col-4 bg-dark">
+      <app-sidebar (updateGraphView)="switcher($event)"></app-sidebar>
+    </div>
+
+    <div class="col-8" style="padding: 0;">
+      <app-creation-view [update]="switch"></app-creation-view>
+    </div>
+
+  </div>
+</div>

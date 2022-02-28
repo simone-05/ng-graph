@@ -1,7 +1,15 @@
-<ngx-graph
-class="chart-container"
-  [view]="[500, 200]"
-  [links]="archi"
-  [nodes]="nodi"
+<!-- <ngx-graph class="chart-container"
+  [view]="[970, 491]"
+  [nodes]="nodes"
+  [links]="edges"
   (select)="onNodeSelect($event)"
-></ngx-graph>
+></ngx-graph> -->
+
+<ngx-graph class="chart-container"
+  [update$]="update$"
+  [center$]="center$"
+  [zoomToFit$]="zoomToFit$"
+  [nodes]="nodes"
+  [links]="edges"
+  (select)="onNodeSelect($event)">
+</ngx-graph>
