@@ -1,21 +1,20 @@
-<!-- style="height: 89.7vh;" -->
-<form [formGroup]="graphInitForm" novalidate *ngIf="!isCreated;else creation" class="mx-3" style="height: 89.7vh;">
+<form [formGroup]="graphInitForm" novalidate *ngIf="isCreated;else creation" class="mx-3" style="height: 89.7vh;">
   <!-- AGGIUNGI ! -->
   <h3 class="py-4 text-white">Graph details</h3>
 
   <div class="form-floating">
-    <input type="text" class="my-2 form-control" id="graphNameInput" placeholder="Graph name" formControlName="graph_name">
+    <input type="text" class="my-2 form-control" id="graphNameInput" placeholder="Graph name" formControlName="graph_name" (input)="checkGraphName($any($event.target).value)">
     <label for="graphNameInput">graph name</label>
     <p class="text-danger text-start" *ngIf="!graphInitForm.controls['graph_name'].valid">graph name required</p>
+    <p class="text-danger text-start" *ngIf="graphNameAlready">graph name already taken</p>
   </div>
 
   <div class="form-floating">
     <textarea class="h-25 my-2 form-control" id="graphDescriptionInput" placeholder="Graph description" formControlName="graph_desc"></textarea>
     <label for="graphDescriptionInput">Graph description</label>
-    <!-- <p class="text-danger text-start" *ngIf="!graphInitForm.controls['graph_desc'].valid">graph description required</p> -->
   </div>
 
-  <button class="w-50 mt-5 btn btn-lg btn-primary" [ngClass]="{'disabled': !graphInitForm.controls['graph_name'].valid}" type="submit" (click)="tryCreate()">Next</button>
+  <button class="w-50 mt-5 btn btn-lg btn-primary" [ngClass]="{'disabled': !graphInitForm.controls['graph_name'].valid || graphNameAlready}" type="submit" (click)="tryCreate()">Next</button>
 </form>
 
 <ng-template #creation>
@@ -23,13 +22,8 @@
     <div class="col-12">
 
       <div class="d-flex">
-        <button class="btn btn-sm btn-transparent align-self-center" (click)="reload_page()">
+        <button class="btn btn-sm btn-transparent align-self-center" (click)="isCreated = false">
           <img src="../../../../../../assets/images/arrow-left-short-white.svg" alt="go back">
-          <!-- <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#fff" class="bi bi-arrow-left-short"
-            viewBox="0 0 16 16">
-            <path fill-rule="evenodd"
-              d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z" />
-          </svg> -->
         </button>
         <h3 class="ms-1 my-3 text-white">{{graphCreationService.graph.name}}</h3>
       </div>
@@ -46,7 +40,8 @@
       <div class="d-flex-column my-grey mt-4">
         <div *ngIf="view=='node';else edgeview">
           <form [formGroup]="newNodeForm" novalidate class="d-flex-column">
-            <input type="text" class="form-control my-2 " formControlName="node_id" placeholder="node id">
+            <input type="text" class="form-control my-2 " formControlName="node_id" placeholder="node id" (input)="checkNodeId($any($event.target).value)">
+            <p class="text-danger text-start" *ngIf="nodeIdAlready">node id already taken</p>
             <input type="text" class="form-control my-2 " formControlName="node_label" placeholder="node label">
 
             <div class="my-2">
@@ -56,78 +51,38 @@
               <label class="mx-2" for="type_task">task</label>
             </div>
 
-            <button class="mt-2 w-50 btn btn-primary" [ngClass]="{'disabled': !newNodeForm.controls['node_id'].valid || !newNodeForm.controls['node_type'].valid}" type="submit" (click)="tryAddNode()">Add</button>
+            <button class="mt-2 w-50 btn btn-primary" [ngClass]="{'disabled': !newNodeForm.controls['node_id'].valid || !newNodeForm.controls['node_type'].valid || nodeIdAlready}" type="submit" (click)="tryAddNode()">Add</button>
           </form>
         </div>
 
         <ng-template #edgeview>
           <form [formGroup]="newEdgeForm" novalidate class="d-flex-column">
-            <input type="text" class="form-control my-2" formControlName="edge_id" placeholder="edge id">
+            <input type="text" class="form-control my-2" formControlName="edge_id" placeholder="edge id" (input)="checkEdgeId($any($event.target).value)">
+            <p class="text-danger text-start" *ngIf="edgeIdAlready">edge id already taken</p>
             <input type="text" class="form-control my-2" formControlName="edge_source" placeholder="edge source">
             <input type="text" class="form-control my-2" formControlName="edge_target" placeholder="edge target">
             <input type="text" class="form-control my-2" formControlName="edge_label" placeholder="edge label">
 
             <button class="mt-2 w-50 btn btn-primary"
-              [ngClass]="{'disabled': !newEdgeForm.controls['edge_id'].valid || !newEdgeForm.controls['edge_source'].valid || !newEdgeForm.controls['edge_target'].valid}"
+              [ngClass]="{'disabled': !newEdgeForm.controls['edge_id'].valid || !newEdgeForm.controls['edge_source'].valid || !newEdgeForm.controls['edge_target'].valid || edgeIdAlready}"
               type="submit" (click)="tryAddEdge()">Add</button>
           </form>
-        </ng-template>
-
-        <div *ngIf="view=='node';else edgelist" style="height: 170px; overflow: auto">
-          <table class="my-2 table-dark table-hover">
-            <thead>
-              <tr>
-                <th>id</th>
-                <th>type</th>
-                <th>label</th>
-              </tr>
-            </thead>
-            <tbody *ngFor="let node of graphCreationService.graph.nodes">
-              <tr>
-                <td>{{node.id}}</td>
-                <td>{{node.type}}</td>
-                <td>{{node.label}}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <ng-template #edgelist>
-          <div style="height: 106.5px; overflow: auto">
-            <table class="my-2 table-dark table-hover">
-              <thead>
-                <tr>
-                  <th>id</th>
-                  <th>source</th>
-                  <th>target</th>
-                  <th>label</th>
-                </tr>
-              </thead>
-              <tbody *ngFor="let edge of graphCreationService.graph.edges">
-                <tr>
-                  <td>{{edge.id}}</td>
-                  <td>{{edge.source}}</td>
-                  <td>{{edge.target}}</td>
-                  <td>{{edge.label}}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </ng-template>
 
       </div>
 
     </div>
 
-    <div class="col-12 mt-auto mb-3">
-      <button class="btn btn-success w-100" (click)="saveGraph()">Create Graph</button>
-    </div>
-
-      <div class="d-flex gap-2 mb-3 justify-content-evenly">
+    <div class="mt-auto">
+      <div class="col-12">
+        <button class="btn btn-success w-100" (click)="saveGraph()">Create Graph</button>
+      </div>
+      <div class=" d-flex gap-2 my-3 justify-content-evenly">
         <button class="btn btn-sm btn-secondary"
           (click)="centerGraph()">Center graph</button>
         <button class="btn btn-sm btn-secondary"
           (click)="fitGraph()">Zoom to fit</button>
       </div>
+    </div>
   </div>
 </ng-template>

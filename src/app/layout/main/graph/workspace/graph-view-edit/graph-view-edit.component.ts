@@ -52,4 +52,8 @@ export class GraphViewEditComponent implements OnInit {
     this.selectedNode.emit(event);
   }
 
+  linkClick(link: any) {
+    console.log(link);
+  }
+
 }

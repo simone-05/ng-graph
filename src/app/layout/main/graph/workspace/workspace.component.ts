@@ -12,6 +12,7 @@ export class WorkspaceComponent implements OnInit {
   sidebar_switch = false;
   graph_id = 0;
   selectedNode: any;
+  selectedEdge: any;
 
   constructor(private activatedRoute: ActivatedRoute, private graphEditService : GraphEditService) { }
 
@@ -32,4 +33,10 @@ export class WorkspaceComponent implements OnInit {
     this.selectedNode = node;
     this.sidebar_switch = !this.sidebar_switch;
   }
+
+  edgeIsSelected(edge: any) {
+    this.selectedEdge = edge;
+    this.sidebar_switch = !this.sidebar_switch;
+  }
+
 }

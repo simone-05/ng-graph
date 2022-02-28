@@ -2,11 +2,11 @@
   <div class="row">
 
     <div class="col-4 bg-dark">
-      <app-sidebar-edit (updateGraphView)="switcher($event)" [selectedNode]="selectedNode" [forcedChange]="sidebar_switch"></app-sidebar-edit>
+      <app-sidebar-edit (updateGraphView)="switcher($event)" [selectedNode]="selectedNode" [selectedEdge]="selectedEdge" [forcedChange]="sidebar_switch"></app-sidebar-edit>
     </div>
 
     <div class="col-8" style="padding: 0;">
-      <app-graph-view-edit [update]="graph_switch" (selectedNode)="nodeIsSelected($event)"></app-graph-view-edit>
+      <app-graph-view-edit [update]="graph_switch" (selectedEdge)="edgeIsSelected($event)" (selectedNode)="nodeIsSelected($event)"></app-graph-view-edit>
     </div>
 
   </div>

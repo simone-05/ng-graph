@@ -19,6 +19,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
   edgeEditing: boolean = false;
   @Output() updateGraphView = new EventEmitter<number>();
   @Input() selectedNode: any;
+  @Input() selectedEdge: any;
   @Input() forcedChange: any;
 
   constructor(public graphEditService: GraphEditService, private formBuilder: FormBuilder, private router: Router) {
@@ -50,10 +51,19 @@ export class SidebarEditComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.nodeForm.get("node_id")?.setValue(this.selectedNode.id);
-    this.nodeInputChange(this.nodeForm.get("node_id")?.value);
-    this.nodeForm.get("node_type")?.setValue(this.selectedNode.type);
-    this.nodeForm.get("node_label")?.setValue(this.selectedNode.label);
+    if (this.nodeForm) {
+      if (changes.hasOwnProperty('selectedNode')) {
+        this.nodeForm.get("node_id")?.setValue(this.selectedNode.id);
+        this.nodeInputChange(this.nodeForm.get("node_id")?.value);
+        this.nodeForm.get("node_type")?.setValue(this.selectedNode.type);
+        this.nodeForm.get("node_label")?.setValue(this.selectedNode.label);
+      }
+    }
+    this.edgeForm.get("edge_id")?.setValue(this.selectedEdge.id);
+    this.edgeInputChange(this.edgeForm.get("edge_id")?.value);
+    this.edgeForm.get("edge_source")?.setValue(this.selectedEdge.source);
+    this.edgeForm.get("edge_target")?.setValue(this.selectedEdge.target);
+    this.edgeForm.get("edge_label")?.setValue(this.selectedEdge.label);
   }
 
   editGraph() {
