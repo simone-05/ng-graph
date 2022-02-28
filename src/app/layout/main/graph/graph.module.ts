@@ -9,6 +9,8 @@ import { RouterModule } from '@angular/router';
 import { SidebarComponent } from './create/sidebar/sidebar.component';
 import { CreationViewComponent } from './create/creation-view/creation-view.component';
 import { NgxGraphModule } from '@swimlane/ngx-graph';
+import { SidebarEditComponent } from './workspace/sidebar-edit/sidebar-edit.component';
+import { GraphViewEditComponent } from './workspace/graph-view-edit/graph-view-edit.component';
 
 
 @NgModule({
@@ -17,7 +19,9 @@ import { NgxGraphModule } from '@swimlane/ngx-graph';
     ListComponent,
     WorkspaceComponent,
     SidebarComponent,
-    CreationViewComponent
+    CreationViewComponent,
+    SidebarEditComponent,
+    GraphViewEditComponent
   ],
   imports: [
     CommonModule,

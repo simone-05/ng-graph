@@ -10,8 +10,13 @@ import { Subject } from 'rxjs';
   styleUrls: ['./creation-view.component.scss']
 })
 export class CreationViewComponent implements OnInit, OnChanges{
-  nodes = [];
-  edges = [];
+  nodes = [
+    // {id: "1", label: 'nodo1', type: "cond"},
+    // {id: "2", label: 'nodo2', type: "task"}
+  ];
+  edges = [
+    // {id: "1", label: "arco1", source: "1", target: "2"}
+  ];
   @Input() update: number = 0;
   update$: Subject<boolean> = new Subject();
   center$: Subject<boolean> = new Subject();

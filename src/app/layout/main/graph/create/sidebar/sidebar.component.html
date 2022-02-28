@@ -73,7 +73,7 @@
           </form>
         </ng-template>
 
-        <div *ngIf="view=='node';else edgelist" style="height: 200px; overflow: auto">
+        <div *ngIf="view=='node';else edgelist" style="height: 170px; overflow: auto">
           <table class="my-2 table-dark table-hover">
             <thead>
               <tr>
@@ -93,7 +93,7 @@
         </div>
 
         <ng-template #edgelist>
-          <div style="height: 136.5px; overflow: auto">
+          <div style="height: 106.5px; overflow: auto">
             <table class="my-2 table-dark table-hover">
               <thead>
                 <tr>
@@ -123,7 +123,7 @@
       <button class="btn btn-success w-100" (click)="saveGraph()">Create Graph</button>
     </div>
 
-      <div class="d-flex gap-2 mb-3 justify-content-center">
+      <div class="d-flex gap-2 mb-3 justify-content-evenly">
         <button class="btn btn-sm btn-secondary"
           (click)="centerGraph()">Center graph</button>
         <button class="btn btn-sm btn-secondary"

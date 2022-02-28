@@ -1,10 +1,3 @@
-<!-- <ngx-graph class="chart-container"
-  [view]="[970, 491]"
-  [nodes]="nodes"
-  [links]="edges"
-  (select)="onNodeSelect($event)"
-></ngx-graph> -->
-
 <ngx-graph class="chart-container"
   [update$]="update$"
   [center$]="center$"
@@ -21,7 +14,7 @@
         <rect x="0" y="10" width="100" height="50" rx="10" fill="#a22"></rect>
         <rect x="0" y="0" width="100" height="30" rx="10" fill="#811"></rect>
       </g>
-      <g  *ngIf="node.type=='cond'">
+      <g *ngIf="node.type=='cond'">
         <!-- conditions -> blue -->
         <rect x="0" y="10" width="100" height="50" rx="10" fill="#22a"></rect>
         <rect x="0" y="0" width="100" height="30" rx="10" fill="#118"></rect>
@@ -30,8 +23,4 @@
       <text x="10" y="50" font-size="15" fill="#fff">{{node.label}}</text>
     </svg>
   </ng-template>
-
-  <!-- <ng-template #linkTemplate let-link>
-  </ng-template> -->
-
 </ngx-graph>
