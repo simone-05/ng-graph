@@ -1,7 +1,7 @@
 import { Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { GraphCreationService, Node } from './../graph-creation.service';
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Edge } from '@swimlane/ngx-graph';
 
 @Component({
@@ -9,13 +9,21 @@ import { Edge } from '@swimlane/ngx-graph';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnInit, OnChanges {
   view: string;
   isCreated: boolean;
   graphInitForm: FormGroup;
   newNodeForm: FormGroup;
   newEdgeForm: FormGroup;
   @Output() updateGraphView = new EventEmitter<number>();
+  @Input() selectedNode: any;
+  @Input() selectedEdge: any;
+  @Input() forcedChange: any;
+  graphNameAlready: boolean = false;
+  nodeIdAlready: boolean = false;
+  edgeIdAlready: boolean = false;
+  nodeEditing: boolean = false;
+  edgeEditing: boolean = false;
 
   constructor(public graphCreationService: GraphCreationService, private formbuilder: FormBuilder, private router: Router) {
     this.view = 'node';
@@ -41,8 +49,50 @@ export class SidebarComponent implements OnInit {
 
     this.graphCreationService.graph$.subscribe();
   }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.hasOwnProperty('selectedNode')) {
+      console.log("nodo");
+      this.newNodeForm.get("node_id")?.setValue(this.selectedNode.id);
+      this.nodeInputChange(this.newNodeForm.get("node_id")?.value);
+      this.newNodeForm.get("node_type")?.setValue(this.selectedNode.type);
+      this.newNodeForm.get("node_label")?.setValue(this.selectedNode.label);
+    }
+
+    if (changes.hasOwnProperty('selectedEdge')) {
+      console.log("arco");
+      this.newEdgeForm.get("edge_id")?.setValue(this.selectedEdge.id);
+      this.edgeInputChange(this.newEdgeForm.get("edge_id")?.value);
+      this.newEdgeForm.get("edge_source")?.setValue(this.selectedEdge.source);
+      this.newEdgeForm.get("edge_target")?.setValue(this.selectedEdge.target);
+      this.newEdgeForm.get("edge_label")?.setValue(this.selectedEdge.label);
+    }
+  }
 
   ngOnInit(): void {
+  }
+
+  checkGraphName(name: string) {
+    if (localStorage.getItem(name)) {
+      this.graphNameAlready = true;
+    } else {
+      this.graphNameAlready = false;
+    }
+  }
+
+  checkNodeId(id: string) {
+    if (this.graphCreationService.graph.nodes.find(nodo => nodo.id ==id)) {
+      this.nodeIdAlready = true;
+    } else {
+      this.nodeIdAlready = false;
+    }
+  }
+
+  checkEdgeId(id: string) {
+    if (this.graphCreationService.graph.edges.find(arco => arco.id ==id)) {
+      this.edgeIdAlready = true;
+    } else {
+      this.edgeIdAlready = false;
+    }
   }
 
   tryCreate() {
@@ -70,6 +120,24 @@ export class SidebarComponent implements OnInit {
     let edge: Edge = {id: edge_id, source: edge_source, target: edge_target, label: edge_label};
     this.graphCreationService.addEdge(edge);
     this.updateGraphView.emit(1);
+  }
+
+  nodeInputChange(id : any) {
+    if (this.graphCreationService.graph.nodes.find(node => node.id==id)) {
+      this.nodeEditing = true;
+      this.view = "node";
+    } else {
+      this.nodeEditing = false;
+    }
+  }
+
+  edgeInputChange(id : any) {
+    if (this.graphCreationService.graph.edges.find(edge => edge.id==id)) {
+      this.edgeEditing = true;
+      this.view = "edge";
+    } else {
+      this.edgeEditing = false;
+    }
   }
 
   saveGraph() {

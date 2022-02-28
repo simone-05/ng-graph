@@ -24,7 +24,7 @@ export class ListComponent implements OnInit {
       );
       this.graph_deletions[index+1] = false;
     }
-    // this.graphs.sort((a,b) => (a.graph.date > b.graph.date)? 1:0);
+    this.graphs = this.graphs.sort((a,b) => (a.graph.date > b.graph.date)? 1:-1);
   }
 
   ngOnInit(): void {

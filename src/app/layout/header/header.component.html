@@ -1,10 +1,10 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-  <a class="navbar-brand ms-4" href="/app/graph">
+  <a class="navbar-brand ms-4 me-auto" [routerLink]="'/app/graph'">
     <img class="mx-2" src="../../../assets/images/logo-gray.svg" width="40" alt="logo">
-  </a>
 
-  <span class="d-none d-sm-inline mx-3 fs-4 me-auto my-grey">App Grafi</span>
+    <span class="d-none d-sm-inline mx-3 fs-4 my-grey">App Grafi</span>
+  </a>
 
   <div ngbDropdown>
     <button ngbDropdownToggle class="btn mx-3 btn-light" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">

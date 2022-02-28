@@ -6,7 +6,10 @@ import { Component, OnInit} from '@angular/core';
   styleUrls: ['./create.component.scss']
 })
 export class CreateComponent implements OnInit {
-  switch = 0;
+  graph_switch = 0;
+  sidebar_switch = false;
+  selectedNode: any;
+  selectedEdge: any;
 
   constructor() {
   }
@@ -15,9 +18,19 @@ export class CreateComponent implements OnInit {
   }
 
   switcher(x: number) {
-    this.switch = x;
+    this.graph_switch = x;
     setTimeout(() => {
-      this.switch = 0;
+      this.graph_switch = 0;
     }, 100);
+  }
+
+  nodeIsSelected(node: any) {
+    this.selectedNode = node;
+    this.sidebar_switch = !this.sidebar_switch;
+  }
+
+  edgeIsSelected(edge: any) {
+    this.selectedEdge = edge;
+    this.sidebar_switch = !this.sidebar_switch;
   }
 }
