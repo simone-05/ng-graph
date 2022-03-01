@@ -51,14 +51,11 @@ export class SidebarEditComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.nodeForm) {
-      if (changes.hasOwnProperty('selectedNode')) {
-        this.nodeForm.get("node_id")?.setValue(this.selectedNode.id);
-        this.nodeInputChange(this.nodeForm.get("node_id")?.value);
-        this.nodeForm.get("node_type")?.setValue(this.selectedNode.type);
-        this.nodeForm.get("node_label")?.setValue(this.selectedNode.label);
-      }
-    }
+    // this.nodeForm.get("node_id")?.setValue(this.selectedNode.id);
+    // this.nodeInputChange(this.nodeForm.get("node_id")?.value);
+    // this.nodeForm.get("node_type")?.setValue(this.selectedNode.type);
+    // this.nodeForm.get("node_label")?.setValue(this.selectedNode.label);
+
     this.edgeForm.get("edge_id")?.setValue(this.selectedEdge.id);
     this.edgeInputChange(this.edgeForm.get("edge_id")?.value);
     this.edgeForm.get("edge_source")?.setValue(this.selectedEdge.source);
@@ -158,10 +155,6 @@ export class SidebarEditComponent implements OnInit, OnChanges {
   clearEdgeInput() {
     this.edgeForm.reset();
     this.edgeEditing = false;
-  }
-
-  reload_page() {
-    location.reload();
   }
 
   centerGraph() {

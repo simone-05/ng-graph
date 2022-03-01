@@ -18,6 +18,7 @@ export class GraphViewEditComponent implements OnInit {
   center$: Subject<boolean> = new Subject();
   zoomToFit$: Subject<boolean> = new Subject();
   @Output() selectedNode = new EventEmitter<any>();
+  @Output() selectedEdge = new EventEmitter<any>();
 
   constructor(public graphEditService: GraphEditService) {
     this.graphEditService.graph$.subscribe();
@@ -53,7 +54,7 @@ export class GraphViewEditComponent implements OnInit {
   }
 
   linkClick(link: any) {
-    console.log(link);
+    this.selectedEdge.emit(link);
   }
 
 }

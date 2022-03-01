@@ -42,6 +42,52 @@ export class GraphCreationService {
     return false;
   }
 
+  editNode(node: Node) : boolean{
+    let index = this.graph.nodes.indexOf(this.graph.nodes.find(nodo => nodo.id == node.id)||node);
+    if (index >= 0) {
+      this.graph.nodes[index] = node;
+      this.graph$.next(this.graph);
+      return true;
+    }
+    return false;
+  }
+
+  editEdge(edge: Edge) : boolean{
+    let index = this.graph.edges.indexOf(this.graph.edges.find(arco => arco.id == edge.id)||edge);
+    if (index >= 0) {
+      this.graph.edges[index] = edge;
+      this.graph$.next(this.graph);
+      return true;
+    }
+    return false;
+  }
+
+  deleteNode(id: string) {
+    this.graph.nodes.forEach((node,index) => {
+      if (node.id == id) {
+        this.graph.nodes.splice(index,1);
+        //elimino anche gli archi a lui collegati
+        this.graph.edges.forEach((edge,e_index) => {
+          if (edge.source == id || edge.target == id) {
+            this.graph.edges.splice(e_index,1);
+          }
+        });
+      }
+    });
+
+    this.graph$.next(this.graph);
+  }
+
+  deleteEdge(id: string) {
+    this.graph.nodes.forEach((edge,index) => {
+      if (edge.id == id) {
+        this.graph.edges.splice(index,1);
+      }
+    })
+    this.graph$.next(this.graph);
+  }
+
+
   saveGraphInStorage() {
     localStorage.setItem(this.graph.name, JSON.stringify(this.graph));
   }

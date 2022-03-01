@@ -45,11 +45,13 @@ export class CreationViewComponent implements OnInit, OnChanges{
       default:
         break;
     }
+
   }
 
   updateGraph() {
     this.nodes = this.graphCreationService.graph$.getValue().nodes;
     this.edges = this.graphCreationService.graph$.getValue().edges;
+
     this.update$.next(true);
   }
 
@@ -58,7 +60,6 @@ export class CreationViewComponent implements OnInit, OnChanges{
   }
 
   linkClick(link: any) {
-    console.log(link);
     this.selectedEdge.emit(link);
   }
 
