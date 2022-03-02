@@ -45,7 +45,6 @@ export class CreationViewComponent implements OnInit, OnChanges{
       default:
         break;
     }
-
   }
 
   updateGraph() {
@@ -56,11 +55,15 @@ export class CreationViewComponent implements OnInit, OnChanges{
   }
 
   onNodeSelect(event: any) {
-    this.selectedNode.emit(event);
+    // this.selectedNode.emit(event);
   }
 
   linkClick(link: any) {
     this.selectedEdge.emit(link);
+  }
+
+  nodeClick(node: any) {
+    this.selectedNode.emit(node)
   }
 
 }

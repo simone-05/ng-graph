@@ -13,22 +13,24 @@ export class SidebarComponent implements OnInit, OnChanges {
   view: string;
   isCreated: boolean;
   graphInitForm: FormGroup;
-  newNodeForm: FormGroup;
-  newEdgeForm: FormGroup;
+  nodeForm: FormGroup;
+  edgeForm: FormGroup;
   @Output() updateGraphView = new EventEmitter<number>();
   @Input() selectedNode?: Node;
   @Input() selectedEdge?: Edge;
   @Input() forcedChange: any;
+
   graphNameAlready: boolean = false;
   nodeIdAlready: boolean = false;
   edgeIdAlready: boolean = false;
   edgeIsLoop: boolean = false;
+  edgeSourceNotFound: boolean = false;
+  edgeTargetNotFound: boolean = false;
   nodeEditing: boolean = false;
   edgeEditing: boolean = false;
-  edge_id_check = {source: "", target: "", id: ""}; //per il controllo nel form, se esiste già la combinazione source-target
 
   constructor(public graphCreationService: GraphCreationService, private formbuilder: FormBuilder, private router: Router) {
-    this.view = 'node';
+    this.view = 'node_task';
     this.isCreated = false;
 
     this.graphInitForm = this.formbuilder.group({
@@ -36,33 +38,29 @@ export class SidebarComponent implements OnInit, OnChanges {
       graph_desc : new FormControl("", Validators.required)
     });
 
-    this.newNodeForm = this.formbuilder.group({
+    this.nodeForm = this.formbuilder.group({
       node_id: ["", Validators.required],
       node_label: ["", Validators.required],
-      node_type: ["", Validators.required],
+      node_type: ["", Validators.required]
     });
 
-    this.newEdgeForm = this.formbuilder.group({
+    this.edgeForm = this.formbuilder.group({
+      edge_id: ["", Validators.required],
+      edge_label: ["", Validators.required],
       edge_source: ["", Validators.required],
       edge_target: ["", Validators.required],
-      edge_label: ["", Validators.required]
     });
 
     this.graphCreationService.graph$.subscribe();
   }
+
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.selectedNode) {
-      this.nodeInputChange(this.selectedNode.id);
-      this.newNodeForm.get("node_id")?.setValue(this.selectedNode.id);
-      this.newNodeForm.get("node_type")?.setValue(this.selectedNode.type);
-      this.newNodeForm.get("node_label")?.setValue(this.selectedNode.label);
+    if (this.forcedChange == 1) {
+      this.selectedNodeInputChange(this.selectedNode);
     }
 
-    if (this.selectedEdge) {
-      this.edgeInputChange(this.selectedEdge.id);
-      this.newEdgeForm.get("edge_source")?.setValue(this.selectedEdge.source);
-      this.newEdgeForm.get("edge_target")?.setValue(this.selectedEdge.target);
-      this.newEdgeForm.get("edge_label")?.setValue(this.selectedEdge.label);
+    if (this.forcedChange == 2) {
+      this.selectedEdgeInputChange(this.selectedEdge);
     }
   }
 
@@ -77,35 +75,62 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
   }
 
-  checkNodeId(id: string) {
-    if (this.graphCreationService.graph.nodes.find(nodo => nodo.id ==id)) {
+  checkNodeInput(){
+    let node_id = this.nodeForm.controls["node_id"].value;
+    this.nodeForm.controls["node_type"].setValue(this.view == "node_cond"? "cond":"task");
+
+    if (node_id != "" && this.graphCreationService.graph.nodes.find(nodo => nodo.id == node_id)) {
       this.nodeIdAlready = true;
+      this.nodeEditing = true;
     } else {
       this.nodeIdAlready = false;
+      this.nodeEditing = false;
     }
   }
 
-  checkEdge(evento: any) {
-    let input = evento.target.attributes.formControlName.value;
-    let value = evento.target.value;
-    if (input == "edge_source") {
-      this.edge_id_check.source = value;
-    } else if (input == "edge_target") {
-      this.edge_id_check.target = value;
+  checkEdgeInput() {
+    let edge_source = this.edgeForm.controls["edge_source"].value;
+    let edge_target = this.edgeForm.controls["edge_target"].value;
+
+    if (edge_source != "") {
+      if (!this.graphCreationService.graph.nodes.find(nodo => nodo.id == edge_source)) {
+        this.edgeSourceNotFound = true;
+      } else {
+        this.edgeSourceNotFound = false;
+      }
+    } else {
+      this.edgeSourceNotFound = false;
     }
 
-    if (this.edge_id_check.source != "" && this.edge_id_check.source == this.edge_id_check.target) {
+    if (edge_target != "") {
+      if (!this.graphCreationService.graph.nodes.find(nodo => nodo.id == edge_target)) {
+        this.edgeTargetNotFound = true;
+      } else {
+        this.edgeTargetNotFound = false;
+      }
+    } else {
+      this.edgeTargetNotFound = false;
+    }
+
+    if (edge_source != "" && edge_target != "" && edge_source == edge_target) {
       this.edgeIsLoop = true;
     } else {
       this.edgeIsLoop = false;
     }
 
-    this.edge_id_check.id = this.edge_id_check.source + "-" + this.edge_id_check.target;
-
-    if (this.graphCreationService.graph.edges.find(arco => arco.id == this.edge_id_check.id)) {
-      this.edgeIdAlready = true;
+    if (edge_source != "" && edge_target != "" && edge_source != edge_target) {
+      this.edgeForm.controls["edge_id"].setValue("_"+edge_source+"-"+edge_target);
+      let edge_id = this.edgeForm.controls["edge_id"].value;
+      if (this.graphCreationService.graph.edges.find(arco => arco.id == edge_id)) {
+        this.edgeIdAlready = true;
+        this.edgeEditing = true;
+      } else {
+        this.edgeIdAlready = false;
+        this.edgeEditing = false;
+      }
     } else {
       this.edgeIdAlready = false;
+      this.edgeEditing = false;
     }
   }
 
@@ -118,85 +143,80 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   tryNode() {
-    let node_id = this.newNodeForm.controls["node_id"].value;
-    let node_label = this.newNodeForm.controls["node_label"].value||"";
-    let node_type = this.newNodeForm.controls["node_type"].value;
+    let node_id = this.nodeForm.controls["node_id"].value;
+    let node_label = this.nodeForm.controls["node_label"].value||"";
+    let node_type = this.nodeForm.controls["node_type"].value;
     let node: Node = {id: node_id, label: node_label, type: node_type};
     if (this.nodeEditing) {
       this.graphCreationService.editNode(node);
     } else {
       this.graphCreationService.addNode(node);
-          this.updateGraphView.emit(1);
-
-      this.clearNodeInput();
-      // this.nodeEditing = true;
-      // this.nodeIdAlready = true;
     }
+    this.clearNodeInput();
     this.updateGraphView.emit(1);
   }
 
   tryEdge() {
-    let edge_source = this.newEdgeForm.controls["edge_source"].value;
-    let edge_target = this.newEdgeForm.controls["edge_target"].value;
-    let edge_label = this.newEdgeForm.controls["edge_label"].value||"";
-    let edge_id = edge_source+"-"+edge_target;
+    let edge_id = this.edgeForm.controls["edge_id"].value;
+    let edge_label = this.edgeForm.controls["edge_label"].value||"";
+    let edge_source = this.edgeForm.controls["edge_source"].value;
+    let edge_target = this.edgeForm.controls["edge_target"].value;
     let edge: Edge = {id: edge_id, source: edge_source, target: edge_target, label: edge_label};
     if (this.edgeEditing) {
       this.graphCreationService.editEdge(edge);
     } else {
       this.graphCreationService.addEdge(edge);
-          this.updateGraphView.emit(1);
-
-      this.clearEdgeInput();
-      // this.edgeEditing = true;
-      // this.edgeIdAlready = true;
     }
-    this.edge_id_check = {source: "", target: "", id: ""}; //per resettare i controlli sul form
+    this.clearEdgeInput();
     this.updateGraphView.emit(1);
   }
 
   deleteNode() {
-    let node_id = this.newNodeForm.controls["node_id"].value;
+    let node_id = this.nodeForm.controls["node_id"].value;
     this.graphCreationService.deleteNode(node_id);
+    this.clearNodeInput();
     this.updateGraphView.emit(1);
-    this.nodeEditing = false;
   }
 
   deleteEdge() {
-    let edge_id = this.newEdgeForm.controls["edge_source"].value+"-"+this.newEdgeForm.controls["edge_target"];
+    let edge_id = this.edgeForm.controls["edge_id"].value;
     this.graphCreationService.deleteEdge(edge_id);
+    this.clearEdgeInput();
     this.updateGraphView.emit(1);
-    this.edgeEditing = false;
   }
 
   clearNodeInput() {
-    this.newNodeForm.reset();
+    this.nodeForm.reset();
+    //reset dei flag
     this.nodeIdAlready = false;
     this.nodeEditing = false;
   }
 
   clearEdgeInput() {
-    this.newEdgeForm.reset();
+    this.edgeForm.reset();
+    //reset dei flag
     this.edgeIdAlready = false;
     this.edgeEditing = false;
+    this.edgeSourceNotFound = false;
+    this.edgeTargetNotFound = false;
+    this.edgeIsLoop = false;
   }
 
-  nodeInputChange(id : any) {
-    if (this.graphCreationService.graph.nodes.find(node => node.id==id)) {
-      this.nodeEditing = true;
-      this.view = "node";
-    } else {
-      this.nodeEditing = false;
-    }
+  selectedNodeInputChange(node : any) {
+    this.nodeForm.get("node_id")?.setValue(node.id);
+    this.nodeForm.get("node_label")?.setValue(node.label);
+    this.nodeForm.get("node_type")?.setValue(node.type);
+    this.view = (node.type == "cond"? "node_cond":"node_task");
+    this.checkNodeInput();
   }
 
-  edgeInputChange(id : any) {
-    if (this.graphCreationService.graph.edges.find(edge => edge.id==id)) {
-      this.edgeEditing = true;
-      this.view = "edge";
-    } else {
-      this.edgeEditing = false;
-    }
+  selectedEdgeInputChange(edge : any) {
+    this.nodeForm.get("edge_id")?.setValue(edge.id);
+    this.edgeForm.get("edge_label")?.setValue(edge.label);
+    this.edgeForm.get("edge_source")?.setValue(edge.source);
+    this.edgeForm.get("edge_target")?.setValue(edge.target);
+    this.view = "edge";
+    this.checkEdgeInput();
   }
 
   saveGraph() {
@@ -207,10 +227,17 @@ export class SidebarComponent implements OnInit, OnChanges {
   start_over() {
     this.graphCreationService.graph.nodes = [];
     this.graphCreationService.graph.edges = [];
+    this.clearNodeInput();
+    this.clearEdgeInput();
     this.updateGraphView.emit(1);
   }
 
   changedView(insertChoice: string) {
+    if (insertChoice == "node_task") {
+      this.nodeForm.controls["node_type"].setValue("task");
+    } else if (insertChoice == "node_cond") {
+      this.nodeForm.controls["node_type"].setValue("cond");
+    }
     this.view = insertChoice;
   }
 

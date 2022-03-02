@@ -7,7 +7,7 @@ import { Component, OnInit} from '@angular/core';
 })
 export class CreateComponent implements OnInit {
   graph_switch = 0;
-  sidebar_switch = false;
+  sidebar_switch = 0;
   selectedNode: any;
   selectedEdge: any;
 
@@ -26,11 +26,17 @@ export class CreateComponent implements OnInit {
 
   nodeIsSelected(node: any) {
     this.selectedNode = node;
-    this.sidebar_switch = !this.sidebar_switch;
+    this.sidebar_switch = 1;
+    setTimeout(() => {
+      this.sidebar_switch = 0;
+    }, 100);
   }
 
   edgeIsSelected(edge: any) {
     this.selectedEdge = edge;
-    this.sidebar_switch = !this.sidebar_switch;
+    this.sidebar_switch = 2;
+    setTimeout(() => {
+      this.sidebar_switch = 0;
+    }, 100);
   }
 }

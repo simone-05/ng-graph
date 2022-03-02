@@ -79,7 +79,7 @@ export class GraphCreationService {
   }
 
   deleteEdge(id: string) {
-    this.graph.nodes.forEach((edge,index) => {
+    this.graph.edges.forEach((edge,index) => {
       if (edge.id == id) {
         this.graph.edges.splice(index,1);
       }
@@ -96,7 +96,7 @@ export class GraphCreationService {
 export interface Node {
   id: string,
   label: string,
-  type: "cond"|"task";
+  type: "cond"|"task"
 }
 
 export interface Graph {
