@@ -1,6 +1,6 @@
+import { GraphEditingService } from './../../graph-editing.service';
 import { Component, OnInit, SimpleChanges, OnChanges, Input, EventEmitter, Output } from '@angular/core';
 import { Subject } from 'rxjs';
-import { GraphEditService } from '../graph-edit.service';
 
 @Component({
   selector: 'app-graph-view-edit',
@@ -17,11 +17,11 @@ export class GraphViewEditComponent implements OnInit {
   update$: Subject<boolean> = new Subject();
   center$: Subject<boolean> = new Subject();
   zoomToFit$: Subject<boolean> = new Subject();
-  @Output() selectedNode = new EventEmitter<any>();
-  @Output() selectedEdge = new EventEmitter<any>();
+  @Output() selectedNode: any = new EventEmitter<any>();
+  @Output() selectedEdge: any = new EventEmitter<any>();
 
-  constructor(public graphEditService: GraphEditService) {
-    this.graphEditService.graph$.subscribe();
+  constructor(public graphEditingService: GraphEditingService) {
+    this.graphEditingService.graph$.subscribe();
   }
 
   ngOnInit(): void {
@@ -44,17 +44,22 @@ export class GraphViewEditComponent implements OnInit {
   }
 
   updateGraph() {
-    this.nodes = this.graphEditService.graph$.getValue().nodes;
-    this.edges = this.graphEditService.graph$.getValue().edges;
+    this.nodes = this.graphEditingService.graph$.getValue().nodes;
+    this.edges = this.graphEditingService.graph$.getValue().edges;
+
     this.update$.next(true);
   }
 
   onNodeSelect(event: any) {
-    this.selectedNode.emit(event);
+    // this.selectedNode.emit(event);
   }
 
   linkClick(link: any) {
     this.selectedEdge.emit(link);
+  }
+
+  nodeClick(node: any) {
+    this.selectedNode.emit(node)
   }
 
 }

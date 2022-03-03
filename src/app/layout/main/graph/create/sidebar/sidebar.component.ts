@@ -1,6 +1,6 @@
+import { GraphEditingService, Node} from './../../graph-editing.service';
 import { Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { GraphCreationService, Node } from './../graph-creation.service';
 import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Edge } from '@swimlane/ngx-graph';
 
@@ -29,7 +29,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   nodeEditing: boolean = false;
   edgeEditing: boolean = false;
 
-  constructor(public graphCreationService: GraphCreationService, private formbuilder: FormBuilder, private router: Router) {
+  constructor(public graphEditingService: GraphEditingService, private formbuilder: FormBuilder, private router: Router) {
     this.view = 'node_task';
     this.isCreated = false;
 
@@ -51,7 +51,10 @@ export class SidebarComponent implements OnInit, OnChanges {
       edge_target: ["", Validators.required],
     });
 
-    this.graphCreationService.graph$.subscribe();
+    this.graphEditingService.graph$.subscribe();
+  }
+
+  ngOnInit(): void {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -62,9 +65,6 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (this.forcedChange == 2) {
       this.selectedEdgeInputChange(this.selectedEdge);
     }
-  }
-
-  ngOnInit(): void {
   }
 
   checkGraphName(name: string) {
@@ -79,7 +79,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     let node_id = this.nodeForm.controls["node_id"].value;
     this.nodeForm.controls["node_type"].setValue(this.view == "node_cond"? "cond":"task");
 
-    if (node_id != "" && this.graphCreationService.graph.nodes.find(nodo => nodo.id == node_id)) {
+    if (node_id != "" && this.graphEditingService.graph.nodes.find(nodo => nodo.id == node_id)) {
       this.nodeIdAlready = true;
       this.nodeEditing = true;
     } else {
@@ -93,7 +93,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     let edge_target = this.edgeForm.controls["edge_target"].value;
 
     if (edge_source != "") {
-      if (!this.graphCreationService.graph.nodes.find(nodo => nodo.id == edge_source)) {
+      if (!this.graphEditingService.graph.nodes.find(nodo => nodo.id == edge_source)) {
         this.edgeSourceNotFound = true;
       } else {
         this.edgeSourceNotFound = false;
@@ -103,7 +103,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
 
     if (edge_target != "") {
-      if (!this.graphCreationService.graph.nodes.find(nodo => nodo.id == edge_target)) {
+      if (!this.graphEditingService.graph.nodes.find(nodo => nodo.id == edge_target)) {
         this.edgeTargetNotFound = true;
       } else {
         this.edgeTargetNotFound = false;
@@ -121,7 +121,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (edge_source != "" && edge_target != "" && edge_source != edge_target) {
       this.edgeForm.controls["edge_id"].setValue("_"+edge_source+"-"+edge_target);
       let edge_id = this.edgeForm.controls["edge_id"].value;
-      if (this.graphCreationService.graph.edges.find(arco => arco.id == edge_id)) {
+      if (this.graphEditingService.graph.edges.find(arco => arco.id == edge_id)) {
         this.edgeIdAlready = true;
         this.edgeEditing = true;
       } else {
@@ -138,7 +138,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (this.graphInitForm.controls["graph_name"].valid) {
       let graph_name = this.graphInitForm.controls["graph_name"].value;
       let graph_desc = this.graphInitForm.controls["graph_desc"].value;
-      this.isCreated = this.graphCreationService.createGraph(graph_name, graph_desc);
+      this.isCreated = this.graphEditingService.createGraph(graph_name, graph_desc);
     }
   }
 
@@ -148,9 +148,9 @@ export class SidebarComponent implements OnInit, OnChanges {
     let node_type = this.nodeForm.controls["node_type"].value;
     let node: Node = {id: node_id, label: node_label, type: node_type};
     if (this.nodeEditing) {
-      this.graphCreationService.editNode(node);
+      this.graphEditingService.editNode(node);
     } else {
-      this.graphCreationService.addNode(node);
+      this.graphEditingService.addNode(node);
     }
     this.clearNodeInput();
     this.updateGraphView.emit(1);
@@ -163,9 +163,9 @@ export class SidebarComponent implements OnInit, OnChanges {
     let edge_target = this.edgeForm.controls["edge_target"].value;
     let edge: Edge = {id: edge_id, source: edge_source, target: edge_target, label: edge_label};
     if (this.edgeEditing) {
-      this.graphCreationService.editEdge(edge);
+      this.graphEditingService.editEdge(edge);
     } else {
-      this.graphCreationService.addEdge(edge);
+      this.graphEditingService.addEdge(edge);
     }
     this.clearEdgeInput();
     this.updateGraphView.emit(1);
@@ -173,14 +173,14 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   deleteNode() {
     let node_id = this.nodeForm.controls["node_id"].value;
-    this.graphCreationService.deleteNode(node_id);
+    this.graphEditingService.deleteNode(node_id);
     this.clearNodeInput();
     this.updateGraphView.emit(1);
   }
 
   deleteEdge() {
     let edge_id = this.edgeForm.controls["edge_id"].value;
-    this.graphCreationService.deleteEdge(edge_id);
+    this.graphEditingService.deleteEdge(edge_id);
     this.clearEdgeInput();
     this.updateGraphView.emit(1);
   }
@@ -220,13 +220,13 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   saveGraph() {
-    this.graphCreationService.saveGraphInStorage();
+    this.graphEditingService.saveGraphInStorage();
     this.router.navigate(["/app/graph/list"]);
   }
 
   start_over() {
-    this.graphCreationService.graph.nodes = [];
-    this.graphCreationService.graph.edges = [];
+    this.graphEditingService.graph.nodes = [];
+    this.graphEditingService.graph.edges = [];
     this.clearNodeInput();
     this.clearEdgeInput();
     this.updateGraphView.emit(1);

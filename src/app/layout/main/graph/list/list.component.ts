@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { GraphsService } from './graphs.service';
 import { Router } from '@angular/router';
-import { Graph } from '../create/graph-creation.service';
+import { Graph } from '../graph-editing.service';
 import { HighlightSpanKind } from 'typescript';
 
 @Component({

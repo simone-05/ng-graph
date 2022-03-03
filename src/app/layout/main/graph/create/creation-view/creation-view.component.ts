@@ -1,5 +1,5 @@
-import { GraphCreationService } from './../graph-creation.service';
-import { ChangeDetectorRef, Component, OnChanges, OnInit, SimpleChanges, Input, Output, EventEmitter } from '@angular/core';
+import { GraphEditingService } from '../../graph-editing.service';
+import { Component, OnChanges, OnInit, SimpleChanges, Input, Output, EventEmitter } from '@angular/core';
 import _ from 'lodash';
 import { Subject } from 'rxjs';
 // import _ as * from 'lodash';
@@ -24,8 +24,8 @@ export class CreationViewComponent implements OnInit, OnChanges{
   @Output() selectedNode: any = new EventEmitter<any>();
   @Output() selectedEdge: any = new EventEmitter<any>();
 
-  constructor(public graphCreationService: GraphCreationService) {
-    this.graphCreationService.graph$.subscribe();
+  constructor(public graphEditingService: GraphEditingService) {
+    this.graphEditingService.graph$.subscribe();
   }
 
   ngOnInit(): void {
@@ -48,8 +48,8 @@ export class CreationViewComponent implements OnInit, OnChanges{
   }
 
   updateGraph() {
-    this.nodes = this.graphCreationService.graph$.getValue().nodes;
-    this.edges = this.graphCreationService.graph$.getValue().edges;
+    this.nodes = this.graphEditingService.graph$.getValue().nodes;
+    this.edges = this.graphEditingService.graph$.getValue().edges;
 
     this.update$.next(true);
   }

@@ -1,4 +1,3 @@
-import { CreationViewComponent } from './creation-view/creation-view.component';
 import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Edge, ClusterNode } from '@swimlane/ngx-graph';
@@ -7,7 +6,7 @@ import { DatePipe } from '@angular/common';
 @Injectable({
   providedIn: 'root'
 })
-export class GraphCreationService {
+export class GraphEditingService {
   graph: Graph = {date: "", name: "", description: "", nodes: [], edges: []};
   graph$: BehaviorSubject<Graph|any> = new BehaviorSubject<Graph|any>(null);
 
@@ -22,6 +21,21 @@ export class GraphCreationService {
     this.graph.edges = [];
     this.graph$.next(this.graph);
     return true;
+  }
+
+  loadGraph(graph_id: number) : boolean {
+    if (graph_id < localStorage.length) {
+      this.graph = JSON.parse(localStorage.getItem(localStorage.key(graph_id)||"")||"");
+      this.graph$.next(this.graph);
+      return true;
+    }
+    return false;
+  }
+
+  editGraph(graph_name: string, graph_desc: string) {
+    this.graph.name = graph_name;
+    this.graph.description = graph_desc;
+    this.graph$.next(this.graph);
   }
 
   addNode(node: Node) : boolean {
@@ -63,16 +77,17 @@ export class GraphCreationService {
   }
 
   deleteNode(id: string) {
+    let del_edges: Edge[] = [];
     this.graph.nodes.forEach((node,index) => {
       if (node.id == id) {
         this.graph.nodes.splice(index,1);
         //elimino anche gli archi a lui collegati
-        this.graph.edges.forEach((edge,e_index) => {
-          if (edge.source == id || edge.target == id) {
-            this.graph.edges.splice(e_index,1);
-          }
-        });
+        del_edges = this.graph.edges.filter(edge => edge.source == id || edge.target == id);
       }
+    });
+
+    del_edges.forEach(element => {
+      this.graph.edges.splice(this.graph.edges.indexOf(element),1);
     });
 
     this.graph$.next(this.graph);
@@ -100,7 +115,7 @@ export interface Node {
 }
 
 export interface Graph {
-  date: string,   //messa come prima verrà salvata come prima nello storage => ordinate per data
+  date: string,
   name: string,
   description: string,
   nodes: Node[],
