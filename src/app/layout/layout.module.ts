@@ -6,7 +6,7 @@ import { ContentComponent } from './content/content.component';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { MainComponent } from './main/main.component';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
@@ -19,9 +19,9 @@ import { RouterModule } from '@angular/router';
   imports: [
     CommonModule,
     LayoutRoutingModule,
-    NgbDropdownModule,
     RouterModule,
-    GraphModule
+    GraphModule,
+    NgbModule,
   ]
 })
 export class LayoutModule { }

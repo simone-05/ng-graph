@@ -102,10 +102,10 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
 
     if (node_id != "" && this.graphEditingService.graph.nodes.find(nodo => nodo.id == node_id)) {
       this.nodeIdAlready = true;
-      this.nodeEditing = true;
+      // this.nodeEditing = true;
     } else {
       this.nodeIdAlready = false;
-      this.nodeEditing = false;
+      // this.nodeEditing = false;
     }
   }
 
@@ -144,10 +144,10 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
       let edge_id = this.edgeForm.controls["edge_id"].value;
       if (this.graphEditingService.graph.edges.find(arco => arco.id == edge_id)) {
         this.edgeIdAlready = true;
-        this.edgeEditing = true;
+        // this.edgeEditing = true;
       } else {
         this.edgeIdAlready = false;
-        this.edgeEditing = false;
+        // this.edgeEditing = false;
       }
     } else {
       this.edgeIdAlready = false;
@@ -159,7 +159,8 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
     let node_id = this.nodeForm.controls["node_id"].value;
     let node_label = this.nodeForm.controls["node_label"].value||"";
     let node_type = this.nodeForm.controls["node_type"].value;
-    let node: Node = {id: node_id, label: node_label, type: node_type};
+    let node_data = {};
+    let node: Node = {id: node_id, label: node_label, type: node_type, data: node_data};
     if (this.nodeEditing) {
       this.graphEditingService.editNode(node);
     } else {
@@ -220,6 +221,7 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
     this.nodeForm.get("node_label")?.setValue(node.label);
     this.nodeForm.get("node_type")?.setValue(node.type);
     this.view = (node.type == "cond"? "node_cond":"node_task");
+    this.nodeEditing = true;
     this.checkNodeInput();
   }
 
@@ -229,6 +231,7 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
     this.edgeForm.get("edge_source")?.setValue(edge.source);
     this.edgeForm.get("edge_target")?.setValue(edge.target);
     this.view = "edge";
+    this.edgeEditing = true;
     this.checkEdgeInput();
   }
 

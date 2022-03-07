@@ -1,4 +1,4 @@
-<form [formGroup]="graphInitForm" novalidate *ngIf="!isCreated;else creation" class="mx-3" style="height: 89.7vh;">
+<form [formGroup]="graphInitForm" novalidate *ngIf="isCreated;else creation" class="mx-3" style="height: 89.7vh;">
   <!-- AGGIUNGI ! -->
   <h3 class="py-4 text-white">Graph details</h3>
 
@@ -43,12 +43,23 @@
       <div class="d-flex-column my-grey mt-4">
         <div *ngIf="view== 'node_cond'||view == 'node_task'">
           <form [formGroup]="nodeForm" novalidate class="d-flex-column">
-            <input type="text" class="form-control my-2 " formControlName="node_id" placeholder="node id" (input)="checkNodeInput()" [ngClass]="{'is-invalid': !nodeForm.controls['node_id'].valid}">
-            <p class="text-danger text-start my-0" *ngIf="nodeIdAlready">node id already taken</p>
+            <input type="text" class="form-control my-2 " formControlName="node_id" placeholder="node id" (input)="checkNodeInput()" [ngClass]="{'is-invalid': !nodeForm.controls['node_id'].valid}" [readonly]="nodeEditing">
+            <p class="text-danger text-start my-0" *ngIf="(nodeIdAlready && !nodeEditing)">node id already taken</p>
             <input type="text" class="form-control my-2 " formControlName="node_label" placeholder="node label">
 
+            <ngb-accordion *ngFor="let item of nodeForm.controls['node_data'].value" #acc="ngbAccordion">
+              <ngb-panel *ngIf="item">
+                <ng-template ngbPanelTitle>
+                  {{item}}
+                </ng-template>
+                <ng-template ngbPanelContent>
+                  heard of the cucumbers
+                </ng-template>
+              </ngb-panel>
+            </ngb-accordion>
+
             <div class="d-flex">
-              <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !nodeForm.controls['node_id'].valid, 'btn-warning': nodeEditing}" type="submit" (click)="tryNode()" [innerText]="(nodeEditing && nodeForm.controls['node_id'].valid)? 'Edit':'Add'">Add</button>
+              <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !nodeForm.controls['node_id'].valid || (nodeIdAlready && !nodeEditing), 'btn-warning': nodeEditing}" type="submit" (click)="tryNode()" [innerText]="(nodeEditing && nodeForm.controls['node_id'].valid)? 'Edit':'Add'">Add</button>
               <button class="ms-3 mt-2 btn btn-danger" *ngIf="nodeEditing && nodeForm.controls['node_id'].valid" (click)="deleteNode()">Delete</button>
               <button class="ms-auto mt-2 btn btn-secondary" (click)="clearNodeInput()">Clear</button>
             </div>
@@ -57,16 +68,16 @@
 
         <div *ngIf="view == 'edge'">
           <form [formGroup]="edgeForm" novalidate class="d-flex-column">
-            <input type="text" class="form-control my-2" formControlName="edge_source" placeholder="edge source" (input)="checkEdgeInput()" [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}">
+            <input type="text" class="form-control my-2" formControlName="edge_source" placeholder="edge source" (input)="checkEdgeInput()" [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}" [readonly]="edgeEditing">
             <p *ngIf="edgeSourceNotFound" class="text-danger text-start mt-1">source node doesn't exist</p>
-            <input type="text" class="form-control my-2" formControlName="edge_target" placeholder="edge target" (input)="checkEdgeInput()" [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}">
+            <input type="text" class="form-control my-2" formControlName="edge_target" placeholder="edge target" (input)="checkEdgeInput()" [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [readonly]="edgeEditing">
             <p *ngIf="edgeTargetNotFound" class="text-danger text-start mt-1">target node doesn't exist</p>
-            <p *ngIf="edgeIdAlready" class="text-danger text-start mt-1">already existst an edge with this combination of source and target</p>
+            <p *ngIf="(edgeIdAlready && !edgeEditing)" class="text-danger text-start mt-1">already existst an edge with this combination of source and target</p>
             <p *ngIf="edgeIsLoop" class="text-danger text-start mt-1">source and target must be different</p>
             <input type="text" class="form-control my-2" formControlName="edge_label" placeholder="edge label">
 
           <div class="d-flex">
-            <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !edgeForm.controls['edge_source'].valid || !edgeForm.controls['edge_target'].valid || edgeIsLoop || edgeSourceNotFound || edgeTargetNotFound, 'btn-warning': edgeEditing}" type="submit" (click)="tryEdge()" [innerText]="(edgeEditing && edgeForm.controls['edge_source'].valid && edgeForm.controls['edge_target'].valid) ? 'Edit':'Add'">Add</button>
+            <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !edgeForm.controls['edge_source'].valid || !edgeForm.controls['edge_target'].valid || edgeIsLoop || edgeSourceNotFound || edgeTargetNotFound || (edgeIdAlready && !edgeEditing), 'btn-warning': edgeEditing}" type="submit" (click)="tryEdge()" [innerText]="(edgeEditing && edgeForm.controls['edge_source'].valid && edgeForm.controls['edge_target'].valid) ? 'Edit':'Add'">Add</button>
             <button class="ms-3 mt-2 btn btn-danger" *ngIf="edgeEditing && edgeForm.controls['edge_source'].valid && edgeForm.controls['edge_target'].valid" (click)="deleteEdge()">Delete</button>
             <button class="ms-auto mt-2 btn btn-secondary" (click)="clearEdgeInput()">Clear</button>
           </div>

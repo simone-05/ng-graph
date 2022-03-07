@@ -108,10 +108,23 @@ export class GraphEditingService {
   }
 }
 
+// export interface Edge {
+//   id: string,
+//   label: string,
+//   source: string,
+//   target: string,
+//   data: {
+//     [keke: string]: string,
+//   },
+// }
+
 export interface Node {
   id: string,
   label: string,
-  type: "cond"|"task"
+  type: "cond"|"task",
+  data: {
+    [ke: string]: string,
+  },
 }
 
 export interface Graph {

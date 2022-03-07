@@ -1,6 +1,6 @@
 import { GraphEditingService, Node} from './../../graph-editing.service';
 import { Router } from '@angular/router';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Edge } from '@swimlane/ngx-graph';
 
@@ -15,6 +15,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   graphInitForm: FormGroup;
   nodeForm: FormGroup;
   edgeForm: FormGroup;
+  nodeDataNumber: number;
   @Output() updateGraphView = new EventEmitter<number>();
   @Input() selectedNode?: Node;
   @Input() selectedEdge?: Edge;
@@ -32,6 +33,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   constructor(public graphEditingService: GraphEditingService, private formbuilder: FormBuilder, private router: Router) {
     this.view = 'node_task';
     this.isCreated = false;
+    this.nodeDataNumber = 0;
 
     this.graphInitForm = this.formbuilder.group({
       graph_name: ["", Validators.required],
@@ -41,7 +43,10 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.nodeForm = this.formbuilder.group({
       node_id: ["", Validators.required],
       node_label: ["", Validators.required],
-      node_type: ["", Validators.required]
+      node_type: ["", Validators.required],
+      node_data: this.formbuilder.array([
+        this.formbuilder.control(""),
+      ]),
     });
 
     this.edgeForm = this.formbuilder.group({
@@ -81,10 +86,10 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     if (node_id != "" && this.graphEditingService.graph.nodes.find(nodo => nodo.id == node_id)) {
       this.nodeIdAlready = true;
-      this.nodeEditing = true;
+      // this.nodeEditing = true;
     } else {
       this.nodeIdAlready = false;
-      this.nodeEditing = false;
+      // this.nodeEditing = false;
     }
   }
 
@@ -123,10 +128,10 @@ export class SidebarComponent implements OnInit, OnChanges {
       let edge_id = this.edgeForm.controls["edge_id"].value;
       if (this.graphEditingService.graph.edges.find(arco => arco.id == edge_id)) {
         this.edgeIdAlready = true;
-        this.edgeEditing = true;
+        // this.edgeEditing = true;
       } else {
         this.edgeIdAlready = false;
-        this.edgeEditing = false;
+        // this.edgeEditing = false;
       }
     } else {
       this.edgeIdAlready = false;
@@ -146,7 +151,8 @@ export class SidebarComponent implements OnInit, OnChanges {
     let node_id = this.nodeForm.controls["node_id"].value;
     let node_label = this.nodeForm.controls["node_label"].value||"";
     let node_type = this.nodeForm.controls["node_type"].value;
-    let node: Node = {id: node_id, label: node_label, type: node_type};
+    let node_data = {};
+    let node: Node = {id: node_id, label: node_label, type: node_type, data: node_data};
     if (this.nodeEditing) {
       this.graphEditingService.editNode(node);
     } else {
@@ -190,6 +196,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     //reset dei flag
     this.nodeIdAlready = false;
     this.nodeEditing = false;
+    this.nodeDataNumber = 0;
   }
 
   clearEdgeInput() {
@@ -207,6 +214,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.nodeForm.get("node_label")?.setValue(node.label);
     this.nodeForm.get("node_type")?.setValue(node.type);
     this.view = (node.type == "cond"? "node_cond":"node_task");
+    this.nodeEditing = true;
     this.checkNodeInput();
   }
 
@@ -216,6 +224,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.edgeForm.get("edge_source")?.setValue(edge.source);
     this.edgeForm.get("edge_target")?.setValue(edge.target);
     this.view = "edge";
+    this.edgeEditing = true;
     this.checkEdgeInput();
   }
 
@@ -251,5 +260,15 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   fitGraph() {
     this.updateGraphView.emit(3);
+  }
+
+  changeNodeDataNumber(n: number) {
+    if (n == 1) {
+      this.nodeDataNumber += 1;
+      console.log(this.nodeForm.controls["node_data"].value);
+    }
+    if (n == -1 && this.nodeDataNumber >= 0) {
+      this.nodeDataNumber -= 1;
+    }
   }
 }

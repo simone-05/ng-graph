@@ -1,8 +1,8 @@
 import { GraphEditingService } from '../../graph-editing.service';
 import { Component, OnChanges, OnInit, SimpleChanges, Input, Output, EventEmitter } from '@angular/core';
-import _ from 'lodash';
 import { Subject } from 'rxjs';
-// import _ as * from 'lodash';
+import * as _ from 'lodash';
+
 
 @Component({
   selector: 'app-creation-view',
@@ -45,6 +45,8 @@ export class CreationViewComponent implements OnInit, OnChanges{
       default:
         break;
     }
+    // console.log(this.nodes);
+    // console.log(this.edges);
   }
 
   updateGraph() {

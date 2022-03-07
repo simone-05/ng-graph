@@ -1,5 +1,5 @@
 import { ReactiveFormsModule } from '@angular/forms';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { WorkspaceComponent } from './workspace/workspace.component';
 import { ListComponent } from './list/list.component';
 import { NgModule } from '@angular/core';
@@ -11,7 +11,6 @@ import { CreationViewComponent } from './create/creation-view/creation-view.comp
 import { NgxGraphModule } from '@swimlane/ngx-graph';
 import { SidebarEditComponent } from './workspace/sidebar-edit/sidebar-edit.component';
 import { GraphViewEditComponent } from './workspace/graph-view-edit/graph-view-edit.component';
-
 
 @NgModule({
   declarations: [
@@ -28,7 +27,8 @@ import { GraphViewEditComponent } from './workspace/graph-view-edit/graph-view-e
     RouterModule,
     NgxGraphModule,
     NgbDropdownModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgbModule,
   ],
   exports: [
     CreateComponent,
