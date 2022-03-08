@@ -114,7 +114,7 @@ export class GraphEditingService {
 //   source: string,
 //   target: string,
 //   data: {
-//     [keke: string]: string,
+//     [indice: string]: string,
 //   },
 // }
 
@@ -122,8 +122,8 @@ export interface Node {
   id: string,
   label: string,
   type: "cond"|"task",
-  data: {
-    [ke: string]: string,
+  properties: {
+    [indice: string]: string,
   },
 }
 

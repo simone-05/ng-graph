@@ -160,7 +160,7 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
     let node_label = this.nodeForm.controls["node_label"].value||"";
     let node_type = this.nodeForm.controls["node_type"].value;
     let node_data = {};
-    let node: Node = {id: node_id, label: node_label, type: node_type, data: node_data};
+    let node: Node = {id: node_id, label: node_label, type: node_type, properties: node_data};
     if (this.nodeEditing) {
       this.graphEditingService.editNode(node);
     } else {

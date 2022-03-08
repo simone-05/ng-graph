@@ -1,7 +1,7 @@
 import { GraphEditingService, Node} from './../../graph-editing.service';
 import { Router } from '@angular/router';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges, enableProdMode } from '@angular/core';
 import { Edge } from '@swimlane/ngx-graph';
 
 @Component({
@@ -15,7 +15,9 @@ export class SidebarComponent implements OnInit, OnChanges {
   graphInitForm: FormGroup;
   nodeForm: FormGroup;
   edgeForm: FormGroup;
+  nodePropForm: FormGroup;
   nodeDataNumber: number;
+  isCollapsed = false;
   @Output() updateGraphView = new EventEmitter<number>();
   @Input() selectedNode?: Node;
   @Input() selectedEdge?: Edge;
@@ -23,11 +25,12 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   graphNameAlready: boolean = false;
   nodeIdAlready: boolean = false;
+  nodeEditing: boolean = false;
+  nodePropAlready: boolean = false;
   edgeIdAlready: boolean = false;
   edgeIsLoop: boolean = false;
   edgeSourceNotFound: boolean = false;
   edgeTargetNotFound: boolean = false;
-  nodeEditing: boolean = false;
   edgeEditing: boolean = false;
 
   constructor(public graphEditingService: GraphEditingService, private formbuilder: FormBuilder, private router: Router) {
@@ -45,9 +48,21 @@ export class SidebarComponent implements OnInit, OnChanges {
       node_label: ["", Validators.required],
       node_type: ["", Validators.required],
       node_data: this.formbuilder.array([
-        this.formbuilder.control(""),
+        // this.formbuilder.control(""),
+        // this.formbuilder.group(
+        //   {
+        //     id: ["", Validators.required],
+        //     name: ["", Validators.required],
+        //     value: ["", Validators.required],
+        // })
       ]),
     });
+
+
+    this.nodePropForm = this.formbuilder.group({
+      node_prop_name: ["", Validators.required],
+      node_prop_value: ["", Validators.required],
+    })
 
     this.edgeForm = this.formbuilder.group({
       edge_id: ["", Validators.required],
@@ -90,6 +105,13 @@ export class SidebarComponent implements OnInit, OnChanges {
     } else {
       this.nodeIdAlready = false;
       // this.nodeEditing = false;
+    }
+    
+    let prop_name = this.nodePropForm.controls["node_prop_name"].value;
+    if (prop_name != "" && this.nodeForm.controls["node_data"].value.find((props: any) => props.name == prop_name)) {
+      this.nodePropAlready = true;
+    } else {
+      this.nodePropAlready = false;
     }
   }
 
@@ -151,8 +173,8 @@ export class SidebarComponent implements OnInit, OnChanges {
     let node_id = this.nodeForm.controls["node_id"].value;
     let node_label = this.nodeForm.controls["node_label"].value||"";
     let node_type = this.nodeForm.controls["node_type"].value;
-    let node_data = {};
-    let node: Node = {id: node_id, label: node_label, type: node_type, data: node_data};
+    let node_data = this.nodeForm.controls["node_data"].value;
+    let node: Node = {id: node_id, label: node_label, type: node_type, properties: node_data};
     if (this.nodeEditing) {
       this.graphEditingService.editNode(node);
     } else {
@@ -193,6 +215,7 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   clearNodeInput() {
     this.nodeForm.reset();
+    this.nodePropForm.reset();
     //reset dei flag
     this.nodeIdAlready = false;
     this.nodeEditing = false;
@@ -213,6 +236,9 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.nodeForm.get("node_id")?.setValue(node.id);
     this.nodeForm.get("node_label")?.setValue(node.label);
     this.nodeForm.get("node_type")?.setValue(node.type);
+    node.properties.forEach((element: any) => {
+      this.nodeForm.controls["node_data"]?.value.push(element);
+    });
     this.view = (node.type == "cond"? "node_cond":"node_task");
     this.nodeEditing = true;
     this.checkNodeInput();
@@ -262,13 +288,27 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.updateGraphView.emit(3);
   }
 
-  changeNodeDataNumber(n: number) {
-    if (n == 1) {
-      this.nodeDataNumber += 1;
-      console.log(this.nodeForm.controls["node_data"].value);
-    }
-    if (n == -1 && this.nodeDataNumber >= 0) {
-      this.nodeDataNumber -= 1;
+  get node_data() : FormArray {
+    return this.nodeForm.get("node_data") as FormArray;
+  }
+
+  addNodeDataField() {
+    this.nodeDataNumber += 1;
+    this.node_data.value.push(
+      {
+        id: this.nodeDataNumber,
+        name: this.nodePropForm.controls["node_prop_name"].value,
+        value: this.nodePropForm.controls["node_prop_value"].value,
+      }
+    );
+    this.nodePropForm.reset();
+    this.nodePropAlready = false;
+  }
+
+  removeNodeDataField(n: number) {
+    if (this.node_data.value.length >= n) {
+      this.node_data.value.splice(n,1);
     }
   }
+
 }
