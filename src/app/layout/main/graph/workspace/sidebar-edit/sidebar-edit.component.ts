@@ -1,8 +1,7 @@
-import { GraphEditingService, Node } from './../../graph-editing.service';
+import { GraphEditingService, Node, Edge } from './../../graph-editing.service';
 import { Router } from '@angular/router';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges, AfterContentChecked } from '@angular/core';
-import { Edge } from '@swimlane/ngx-graph';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges, AfterContentChecked, AfterContentInit, AfterViewInit } from '@angular/core';
 
 
 @Component({
@@ -10,27 +9,32 @@ import { Edge } from '@swimlane/ngx-graph';
   templateUrl: './sidebar-edit.component.html',
   styleUrls: ['./sidebar-edit.component.scss']
 })
-export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChecked {
-  view: string = "node";
+export class SidebarEditComponent implements OnInit, OnChanges {
+  view: string;
+
+  editGraphForm: FormGroup;
   nodeForm: FormGroup;
   edgeForm: FormGroup;
-  editGraphForm: FormGroup;
+  nodePropForm: FormGroup;
+  edgePropForm: FormGroup;
+
+  nodePropId: number;
+  edgePropId: number;
+  isCollapsed: boolean;
   @Output() updateGraphView = new EventEmitter<number>();
   @Input() selectedNode?: any;
   @Input() selectedEdge?: any;
   @Input() forcedChange: any;
 
   graphNameAlready: boolean = false;
-  nodeIdAlready: boolean = false;
-  edgeIdAlready: boolean = false;
-  edgeIsLoop: boolean = false;
-  edgeSourceNotFound: boolean = false;
-  edgeTargetNotFound: boolean = false;
   nodeEditing: boolean = false;
   edgeEditing: boolean = false;
 
   constructor(public graphEditingService: GraphEditingService, private formBuilder: FormBuilder, private router: Router) {
     this.view = "node_task";
+    this.isCollapsed = true;
+    this.nodePropId = 0;
+    this.edgePropId = 0;
 
     this.editGraphForm = this.formBuilder.group({
       graph_name: ["", Validators.required],
@@ -38,29 +42,36 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
     });
 
     this.nodeForm = this.formBuilder.group({
-      node_id: ["", Validators.required],
-      node_label: ["", Validators.required],
-      node_type: ["", Validators.required],
+      node_id: [null, [Validators.required, this.checkNodeId()]],
+      node_label: null,
+      node_type: null,
+      node_data: this.formBuilder.array([]),
+    });
+
+    this.nodePropForm = this.formBuilder.group({
+      node_prop_name: [null, [Validators.required, this.checkNodeProperty()]],
+      node_prop_value: [null, Validators.required],
     });
 
     this.edgeForm = this.formBuilder.group({
-      edge_id: ["", Validators.required],
-      edge_source: ["", Validators.required],
-      edge_target: ["", Validators.required],
-      edge_label: ["", Validators.required]
-    });
+      edge_id: null,
+      edge_label: null,
+      edge_source: [null, [Validators.required, this.checkEdgeNode()]],
+      edge_target: [null, [Validators.required, this.checkEdgeNode()]],
+      edge_data: this.formBuilder.array([]),
+    }, {validators: this.checkEdgeId()});
 
-    this.graphEditingService.graph$.subscribe();
+    // this.graphEditingService.graph$.subscribe();
+
+    this.edgePropForm = this.formBuilder.group({
+      edge_prop_name: [null, [Validators.required, this.checkEdgeProperty()]],
+      edge_prop_value: [null, Validators.required],
+    });
   }
 
   ngOnInit(): void {
     this.editGraphForm.get("graph_name")?.setValue(this.graphEditingService.graph.name);
     this.editGraphForm.get("graph_desc")?.setValue(this.graphEditingService.graph.description);
-  }
-
-  ngAfterContentChecked(): void {
-    //centro il grafo quando apro la sua visualizzazione
-    this.centerGraph();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -71,6 +82,14 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
     if (this.forcedChange == 2) {
       this.selectedEdgeInputChange(this.selectedEdge);
     }
+  }
+
+  get nodeDataForm(): FormArray {
+    return this.nodeForm.get("node_data") as FormArray;
+  }
+
+  get edgeDataForm(): FormArray {
+    return this.edgeForm.get("edge_data") as FormArray;
   }
 
   editGraph() {
@@ -96,143 +115,97 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
     }
   }
 
-  checkNodeInput(){
-    let node_id = this.nodeForm.controls["node_id"].value;
-    this.nodeForm.controls["node_type"].setValue(this.view == "node_cond"? "cond":"task");
-
-    if (node_id != "" && this.graphEditingService.graph.nodes.find(nodo => nodo.id == node_id)) {
-      this.nodeIdAlready = true;
-      // this.nodeEditing = true;
-    } else {
-      this.nodeIdAlready = false;
-      // this.nodeEditing = false;
-    }
-  }
-
-  checkEdgeInput() {
-    let edge_source = this.edgeForm.controls["edge_source"].value;
-    let edge_target = this.edgeForm.controls["edge_target"].value;
-
-    if (edge_source != "") {
-      if (!this.graphEditingService.graph.nodes.find(nodo => nodo.id == edge_source)) {
-        this.edgeSourceNotFound = true;
-      } else {
-        this.edgeSourceNotFound = false;
-      }
-    } else {
-      this.edgeSourceNotFound = false;
-    }
-
-    if (edge_target != "") {
-      if (!this.graphEditingService.graph.nodes.find(nodo => nodo.id == edge_target)) {
-        this.edgeTargetNotFound = true;
-      } else {
-        this.edgeTargetNotFound = false;
-      }
-    } else {
-      this.edgeTargetNotFound = false;
-    }
-
-    if (edge_source != "" && edge_target != "" && edge_source == edge_target) {
-      this.edgeIsLoop = true;
-    } else {
-      this.edgeIsLoop = false;
-    }
-
-    if (edge_source != "" && edge_target != "" && edge_source != edge_target) {
-      this.edgeForm.controls["edge_id"].setValue("_"+edge_source+"-"+edge_target);
-      let edge_id = this.edgeForm.controls["edge_id"].value;
-      if (this.graphEditingService.graph.edges.find(arco => arco.id == edge_id)) {
-        this.edgeIdAlready = true;
-        // this.edgeEditing = true;
-      } else {
-        this.edgeIdAlready = false;
-        // this.edgeEditing = false;
-      }
-    } else {
-      this.edgeIdAlready = false;
-      this.edgeEditing = false;
-    }
-  }
-
   tryNode() {
     let node_id = this.nodeForm.controls["node_id"].value;
-    let node_label = this.nodeForm.controls["node_label"].value||"";
+    let node_label = this.nodeForm.controls["node_label"].value || "";
+    this.nodeForm.controls['node_type'].setValue(this.view == "node_cond" ? "cond" : "task");
     let node_type = this.nodeForm.controls["node_type"].value;
-    let node_data = {};
-    let node: Node = {id: node_id, label: node_label, type: node_type, properties: node_data};
+    let node_data = this.nodeForm.controls["node_data"].value;
+    let node: Node = { id: node_id, label: node_label, type: node_type, properties: node_data };
     if (this.nodeEditing) {
       this.graphEditingService.editNode(node);
     } else {
       this.graphEditingService.addNode(node);
     }
     this.clearNodeInput();
-    this.updateGraphView.emit(1);
   }
 
   tryEdge() {
-    let edge_id = this.edgeForm.controls["edge_id"].value;
-    let edge_label = this.edgeForm.controls["edge_label"].value||"";
+    let edge_label = this.edgeForm.controls["edge_label"].value || "";
     let edge_source = this.edgeForm.controls["edge_source"].value;
     let edge_target = this.edgeForm.controls["edge_target"].value;
-    let edge: Edge = {id: edge_id, source: edge_source, target: edge_target, label: edge_label};
+    this.edgeForm.controls["edge_id"].setValue("_" + edge_source + "-" + edge_target);
+    let edge_id = this.edgeForm.controls["edge_id"].value;
+    let edge_data = this.edgeForm.controls['edge_data'].value;
+    let edge: Edge = { id: edge_id, source: edge_source, target: edge_target, label: edge_label, properties: edge_data };
     if (this.edgeEditing) {
       this.graphEditingService.editEdge(edge);
     } else {
       this.graphEditingService.addEdge(edge);
     }
     this.clearEdgeInput();
-    this.updateGraphView.emit(1);
   }
 
   deleteNode() {
     let node_id = this.nodeForm.controls["node_id"].value;
     this.graphEditingService.deleteNode(node_id);
     this.clearNodeInput();
-    this.updateGraphView.emit(1);
   }
 
   deleteEdge() {
     let edge_id = this.edgeForm.controls["edge_id"].value;
     this.graphEditingService.deleteEdge(edge_id);
     this.clearEdgeInput();
-    this.updateGraphView.emit(1);
   }
 
   clearNodeInput() {
-    this.nodeForm.reset();
-    //reset dei flag
-    this.nodeIdAlready = false;
     this.nodeEditing = false;
+    this.nodePropId = 0;
+    this.nodeForm.reset();
+    this.nodeDataForm.controls = [];
+    // this.nodeDataForm.updateValueAndValidity();
   }
 
   clearEdgeInput() {
-    this.edgeForm.reset();
-    //reset dei flag
-    this.edgeIdAlready = false;
     this.edgeEditing = false;
-    this.edgeSourceNotFound = false;
-    this.edgeTargetNotFound = false;
-    this.edgeIsLoop = false;
+    this.edgePropId = 0;
+    this.edgeForm.reset();
+    this.edgeDataForm.controls = [];
   }
 
-  selectedNodeInputChange(node : any) {
-    this.nodeForm.get("node_id")?.setValue(node.id);
-    this.nodeForm.get("node_label")?.setValue(node.label);
-    this.nodeForm.get("node_type")?.setValue(node.type);
-    this.view = (node.type == "cond"? "node_cond":"node_task");
+  selectedNodeInputChange(node: any) {
+    this.clearNodeInput();
     this.nodeEditing = true;
-    this.checkNodeInput();
+    this.nodeForm.controls["node_id"].setValue(node.id);
+    this.nodeForm.controls["node_label"].setValue(node.label);
+
+    node.properties.forEach((element: any) => {
+      const dato = this.formBuilder.group({
+        id: element.id,
+        name: element.name,
+        value: element.value,
+      });
+      this.nodeDataForm.push(dato);
+    });
+    this.view = (node.type == "cond" ? "node_cond" : "node_task");
   }
 
-  selectedEdgeInputChange(edge : any) {
-    this.nodeForm.get("edge_id")?.setValue(edge.id);
-    this.edgeForm.get("edge_label")?.setValue(edge.label);
-    this.edgeForm.get("edge_source")?.setValue(edge.source);
-    this.edgeForm.get("edge_target")?.setValue(edge.target);
-    this.view = "edge";
+  selectedEdgeInputChange(edge: any) {
+    this.clearEdgeInput();
     this.edgeEditing = true;
-    this.checkEdgeInput();
+    this.edgeForm.controls["edge_id"].setValue(edge.id);
+    this.edgeForm.controls["edge_label"].setValue(edge.label);
+    this.edgeForm.controls["edge_source"].setValue(edge.source);
+    this.edgeForm.controls["edge_target"].setValue(edge.target);
+    edge.properties.forEach((element: any) => {
+      const dato = this.formBuilder.group({
+        id: element.id,
+        name: element.name,
+        value: element.value,
+      });
+      this.edgeDataForm.push(dato);
+    });
+    this.view = "edge";
   }
 
   saveGraph() {
@@ -241,19 +214,12 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
   }
 
   start_over() {
-    this.graphEditingService.graph.nodes = [];
-    this.graphEditingService.graph.edges = [];
+    this.graphEditingService.clearGraph();
     this.clearNodeInput();
     this.clearEdgeInput();
-    this.updateGraphView.emit(1);
   }
 
   changedView(insertChoice: string) {
-    if (insertChoice == "node_task") {
-      this.nodeForm.controls["node_type"].setValue("task");
-    } else if (insertChoice == "node_cond") {
-      this.nodeForm.controls["node_type"].setValue("cond");
-    }
     this.view = insertChoice;
   }
 
@@ -267,5 +233,87 @@ export class SidebarEditComponent implements OnInit, OnChanges, AfterContentChec
 
   fitGraph() {
     this.updateGraphView.emit(3);
+  }
+
+  addNodeDataField() {
+    this.nodePropId += 1;
+    const dato = this.formBuilder.group({
+      id: this.nodePropId,
+      name: this.nodePropForm.controls["node_prop_name"].value,
+      value: this.nodePropForm.controls["node_prop_value"].value,
+    });
+    this.nodeDataForm.push(dato);
+    this.nodePropForm.reset();
+  }
+
+  addEdgeDataField() {
+    this.edgePropId += 1;
+    const dato = this.formBuilder.group({
+      id: this.edgePropId,
+      name: this.edgePropForm.controls["edge_prop_name"].value,
+      value: this.edgePropForm.controls["edge_prop_value"].value,
+    });
+    this.edgeDataForm.push(dato);
+    this.edgePropForm.reset();
+  }
+
+  removeNodeDataField(n: number) {
+    this.nodeDataForm.removeAt(n);
+  }
+
+  removeEdgeDataField(n: number) {
+    this.edgeDataForm.removeAt(n);
+  }
+
+  checkNodeId(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (control.value && this.graphEditingService.graph.nodes.find(nodo => nodo.id == control.value && !this.nodeEditing)) {
+        return { msg: "Already exists a node with this id" };
+      } else return null
+    }
+  }
+
+  checkNodeProperty(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (control.value && this.nodeForm.controls["node_data"].value.find((props: any) => props.name == control.value)) {
+        return { msg: "Already existst a property with this name" };
+      } else return null;
+    }
+  }
+
+  checkEdgeId(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (control.value) {
+        let source = control.value.edge_source;
+        let target = control.value.edge_target;
+        if (source && target) {
+          if (source == target) {
+            return { loop: true, msg: "Source and target must be different" };
+          } else {
+            let id = "_" + source + "-" + target;
+            if (this.graphEditingService.graph.edges.find(arco => arco.id == id && !this.edgeEditing)) {
+              return { already: true, msg: "Already existst an edge with this id" };
+            }
+          }
+        }
+      }
+      return null;
+    }
+  }
+
+  checkEdgeNode(): ValidatorFn {
+    return (control) => {
+      if (control.value && !this.graphEditingService.graph.nodes.find(nodo => nodo.id == control.value)) {
+        return { notFound: true };
+      } else return null;
+    }
+  }
+
+  checkEdgeProperty(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (control.value && this.edgeForm.controls["edge_data"].value.find((props: any) => props.name == control.value)) {
+        return { msg: "Already existst a property with this name" };
+      } else return null;
+    }
   }
 }

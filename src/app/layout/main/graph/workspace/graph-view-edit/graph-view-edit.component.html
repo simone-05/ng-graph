@@ -2,26 +2,47 @@
   [nodes]="nodes" [links]="edges">
 
   <ng-template #nodeTemplate let-node>
-    <svg xmlns="http://www.w3.org/2000/svg" (click)="nodeClick(node)">
+    <svg xmlns="http://www.w3.org/2000/svg" (click)="nodeClick(node)" (mouseenter)="moreDetails(node.id)" (mouseleave)="moreDetails(0)">
       <g *ngIf="node.type=='task'">
         <!-- tasks -> red -->
         <rect x="0" y="10" width="100" height="50" rx="10" fill="#a22"></rect>
         <rect x="0" y="0" width="100" height="30" rx="10" fill="#811"></rect>
+        <text x="20" y="20" font-size="15" fill="#fff">{{node.id}}</text>
+        <text x="10" y="50" font-size="15" fill="#fff">{{node.label}}</text>
+
+        <g *ngIf="showDetails == node.id">
+          <!-- dettagli -->
+          <g *ngFor="let prop of node.properties; let i=index">
+            <rect x="0" [attr.y]="(i==0)? 40: 30+((i+1)*30)" width="100" [attr.height]="(i==0)? 70:50" rx="10" fill="#a22">
+            </rect>
+            <text x="10" [attr.y]="40+((i+1)*35)" font-size="15" fill="#fff">{{prop.name}} {{prop.value}}</text>
+          </g>
+        </g>
       </g>
+
       <g *ngIf="node.type=='cond'">
         <!-- conditions -> blue -->
-        <rect x="0" y="10" width="100" height="50" rx="10" fill="#22a"></rect>
-        <rect x="0" y="0" width="100" height="30" rx="10" fill="#118"></rect>
+        <circle cx="50" cy="50" r="25" fill="#118"/>
+        <text x="46" y="55" font-size="15" fill="#fff">{{node.id}}</text>
+
+        <g *ngIf="showDetails == node.id">
+          <!-- dettagli -->
+          <g *ngFor="let prop of node.properties; let i=index">
+            <rect x="0" [attr.y]="(i==0)? 80: 70+((i+1)*30)" width="100" [attr.height]="(i==0)? 70:50" rx="10" fill="#118">
+            </rect>
+            <text x="10" [attr.y]="80+((i+1)*35)" font-size="15" fill="#fff">{{prop.name}} {{prop.value}}</text>
+          </g>
+        </g>
       </g>
-      <text x="20" y="20" font-size="15" fill="#fff">{{node.id}}</text>
-      <text x="10" y="50" font-size="15" fill="#fff">{{node.label}}</text>
+
     </svg>
   </ng-template>
+
 
   <ng-template #linkTemplate let-link>
     <svg:g class="edge" (click)="linkClick(link)">
       <svg:circle width="15" height="15" fill="#000"></svg:circle>
-      <svg:path class="line" stroke-width="5" marker-end="url(#arrow)"></svg:path>
+      <svg:path class="line" [ngClass]="{'edge-success': this.checkConditions(link), 'edge-insuccess': !this.checkConditions(link)}" stroke-width="5" marker-end="url(#arrow)"></svg:path>
       <svg:text class="edge-label" text-anchor="middle">
         <textPath class="text-path" [attr.href]="'#' + link.id" [style.dominant-baseline]="link.dominantBaseline"
           startOffset="50%">
@@ -37,3 +58,8 @@
     </svg:marker>
   </ng-template>
 </ngx-graph>
+
+<!-- <foreignObject>
+  <xhtml:span class="tooltip-node">
+  </html:span>
+</foreignObject> -->

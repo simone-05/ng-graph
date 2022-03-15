@@ -24,8 +24,23 @@ export class CreationViewComponent implements OnInit, OnChanges{
   @Output() selectedNode: any = new EventEmitter<any>();
   @Output() selectedEdge: any = new EventEmitter<any>();
 
+  Object = Object;
+
+  showDetails: number;
+
   constructor(public graphEditingService: GraphEditingService) {
-    this.graphEditingService.graph$.subscribe();
+    this.showDetails = 0;
+
+    this.graphEditingService.graph$.subscribe((element) => {
+      if (element) {
+      //   if (element.id) {
+      //     this.checkConditions(element);
+      //   }
+      //   console.log("ok1");
+        this.updateGraph();
+        // console.log("ok2");
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -34,7 +49,7 @@ export class CreationViewComponent implements OnInit, OnChanges{
   ngOnChanges(changes: SimpleChanges): void {
     switch (this.update) {
       case 1:
-        this.updateGraph();
+        // this.updateGraph();
         break;
       case 2:
         this.center$.next(true)
@@ -42,6 +57,8 @@ export class CreationViewComponent implements OnInit, OnChanges{
       case 3:
         this.zoomToFit$.next(true)
         break;
+      case 4:
+
       default:
         break;
     }
@@ -52,7 +69,6 @@ export class CreationViewComponent implements OnInit, OnChanges{
   updateGraph() {
     this.nodes = this.graphEditingService.graph$.getValue().nodes;
     this.edges = this.graphEditingService.graph$.getValue().edges;
-
     this.update$.next(true);
   }
 
@@ -62,10 +78,22 @@ export class CreationViewComponent implements OnInit, OnChanges{
 
   linkClick(link: any) {
     this.selectedEdge.emit(link);
+    console.log(link);
+
   }
 
   nodeClick(node: any) {
     this.selectedNode.emit(node)
   }
 
+  //id è il numero del nodo se il mouse è sopra, 0 se il mouse esce dal nodo
+  moreDetails(id: number) {
+    this.showDetails = id;
+  }
+
+  checkConditions(node: Node) {
+    console.log(node);
+  }
 }
+
+

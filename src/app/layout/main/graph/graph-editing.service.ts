@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { Edge, ClusterNode } from '@swimlane/ngx-graph';
+import { ClusterNode } from '@swimlane/ngx-graph';
 import { DatePipe } from '@angular/common';
 
 @Injectable({
@@ -41,7 +41,7 @@ export class GraphEditingService {
   addNode(node: Node) : boolean {
     if (node && !this.graph.nodes.find(nodo => nodo.id == node.id)) {
       this.graph.nodes.push(node);
-      this.graph$.next(this.graph);
+      this.graph$.next(node);
       return true;
     }
     return false;
@@ -50,7 +50,7 @@ export class GraphEditingService {
   addEdge(edge: Edge) : boolean {
     if (edge && !this.graph.edges.find(arco => arco.id == edge.id)) {
       this.graph.edges.push(edge);
-      this.graph$.next(this.graph);
+      this.graph$.next(edge);
       return true;
     }
     return false;
@@ -60,7 +60,7 @@ export class GraphEditingService {
     let index = this.graph.nodes.indexOf(this.graph.nodes.find(nodo => nodo.id == node.id)||node);
     if (index >= 0) {
       this.graph.nodes[index] = node;
-      this.graph$.next(this.graph);
+      this.graph$.next(node);
       return true;
     }
     return false;
@@ -70,7 +70,7 @@ export class GraphEditingService {
     let index = this.graph.edges.indexOf(this.graph.edges.find(arco => arco.id == edge.id)||edge);
     if (index >= 0) {
       this.graph.edges[index] = edge;
-      this.graph$.next(this.graph);
+      this.graph$.next(edge);
       return true;
     }
     return false;
@@ -102,21 +102,29 @@ export class GraphEditingService {
     this.graph$.next(this.graph);
   }
 
-
   saveGraphInStorage() {
     localStorage.setItem(this.graph.name, JSON.stringify(this.graph));
   }
+
+  /*
+   * Deletes all nodes and edges, preserving graph name and description
+  */
+  clearGraph() {
+    this.graph.nodes=[];
+    this.graph.edges=[];
+    this.graph$.next(this.graph);
+  }
 }
 
-// export interface Edge {
-//   id: string,
-//   label: string,
-//   source: string,
-//   target: string,
-//   data: {
-//     [indice: string]: string,
-//   },
-// }
+export interface Edge {
+  id: string,
+  label: string,
+  source: string,
+  target: string,
+  properties: {
+    [indice: string]: string,
+  },
+}
 
 export interface Node {
   id: string,
