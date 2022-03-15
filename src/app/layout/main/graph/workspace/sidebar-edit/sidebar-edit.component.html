@@ -76,10 +76,10 @@
                     <small class="text-danger text-start my-0"
                       *ngIf="!nodePropForm.valid">{{nodePropForm.controls['node_prop_name'].errors?.['msg']}}</small>
                   </div>
-                  <!-- <div class="col-12 ps-3 pb-3 btn d-flex align-items-center" (click)="addNodeDataField()">
-                            <img src="../../../../../../assets/images/plus-dark.svg" alt="add data field">
-                            <p class="m-0 ms-1" style="color: #444">Add data field</p>
-                          </div> -->
+                  <!-- <div class="col-12 ps-3 pb-3 btn d-flex align-items-center" *ngIf="view=='node_cond'" (click)="addNodeDataGroup()">
+                    <img src="../../../../../../assets/images/plus-dark.svg" alt="add data field">
+                    <p class="m-0 ms-1" style="color: #666">Add data group</p>
+                  </div> -->
                 </div>
               </div>
             </div>
@@ -97,14 +97,13 @@
           <form [formGroup]="edgeForm" novalidate class="d-flex-column">
             <input class="form-control my-2" type="text" formControlName="edge_source" placeholder="edge source"
               [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}" [readonly]="edgeEditing">
-            <p *ngIf="edgeForm.controls['edge_source'].errors?.['notFound']" class="text-danger text-start mt-1">source node
-              doesn't exist</p>
-            <input class="form-control my-2" type="text" formControlName="edge_target" placeholder="edge target"
-              [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [readonly]="edgeEditing">
-            <p *ngIf="edgeForm.controls['edge_target'].errors?.['notFound']" class="text-danger text-start mt-1">target node
-              doesn't exist</p>
+            <p *ngIf="edgeForm.controls['edge_source'].errors?.['notFound']" class="text-danger text-start mt-1">source node doesn't exist</p>
+            <input class="form-control my-2" type="text" formControlName="edge_target" placeholder="edge target" [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [readonly]="edgeEditing">
+            <p *ngIf="edgeForm.controls['edge_target'].errors?.['notFound']" class="text-danger text-start mt-1">target node doesn't exist</p>
+            <p *ngIf="edgeForm.controls['edge_target'].errors?.['already2cond'] && !edgeForm.errors?.['cond2cond']" class="text-danger text-start mt-1">{{edgeForm.controls['edge_target'].errors?.['msg']}}</p>
             <p *ngIf="edgeForm.errors?.['already']" class="text-danger text-start mt-1">{{edgeForm.errors?.['msg']}}</p>
             <p *ngIf="edgeForm.errors?.['loop']" class="text-danger text-start mt-1">{{edgeForm.errors?.['msg']}}</p>
+            <p *ngIf="edgeForm.errors?.['cond2cond']" class="text-danger text-start mt-1">{{edgeForm.errors?.['msg']}}</p>
             <input class="form-control my-2" type="text" formControlName="edge_label" placeholder="edge label">
 
             <div class="accordion text-dark">

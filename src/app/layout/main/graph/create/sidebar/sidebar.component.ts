@@ -286,7 +286,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           } else {
             let id = "_"+source+"-"+target;
             if (this.graphEditingService.graph.edges.find(arco => arco.id == id && !this.edgeEditing)) {
-              return {already: true, msg: "Already existst an edge with this id"};
+              return {already: true, msg: "Already existst an edge between this nodes"};
             }
           }
         }

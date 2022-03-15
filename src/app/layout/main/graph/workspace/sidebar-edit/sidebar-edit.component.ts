@@ -1,4 +1,4 @@
-import { GraphEditingService, Node, Edge } from './../../graph-editing.service';
+import { GraphEditingService, Node, Edge, Graph } from './../../graph-editing.service';
 import { Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges, AfterContentChecked, AfterContentInit, AfterViewInit } from '@angular/core';
@@ -57,7 +57,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
       edge_id: null,
       edge_label: null,
       edge_source: [null, [Validators.required, this.checkEdgeNode()]],
-      edge_target: [null, [Validators.required, this.checkEdgeNode()]],
+      edge_target: [null, [Validators.required, this.checkEdgeNode(), this.checkCondNode()]],
       edge_data: this.formBuilder.array([]),
     }, {validators: this.checkEdgeId()});
 
@@ -70,8 +70,8 @@ export class SidebarEditComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    this.editGraphForm.get("graph_name")?.setValue(this.graphEditingService.graph.name);
-    this.editGraphForm.get("graph_desc")?.setValue(this.graphEditingService.graph.description);
+    this.editGraphForm.get("graph_name")?.setValue(this.graph.name);
+    this.editGraphForm.get("graph_desc")?.setValue(this.graph.description);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -84,6 +84,10 @@ export class SidebarEditComponent implements OnInit, OnChanges {
     }
   }
 
+  get graph(): Graph {
+    return this.graphEditingService.graph;
+  }
+
   get nodeDataForm(): FormArray {
     return this.nodeForm.get("node_data") as FormArray;
   }
@@ -94,20 +98,20 @@ export class SidebarEditComponent implements OnInit, OnChanges {
 
   editGraph() {
     let new_name = this.editGraphForm.controls["graph_name"].value;
-    let old_name = this.graphEditingService.graph.name;
+    let old_name = this.graph.name;
     if (this.editGraphForm.controls["graph_name"].valid) {
       if (old_name != new_name && !localStorage.getItem(new_name)) {
         this.graphNameAlready = false;
         localStorage.removeItem(old_name);
-        this.graphEditingService.graph.name = this.editGraphForm.controls['graph_name'].value;
+        this.graph.name = this.editGraphForm.controls['graph_name'].value;
       }
-      this.graphEditingService.graph.description = this.editGraphForm.controls['graph_desc'].value;
+      this.graph.description = this.editGraphForm.controls['graph_desc'].value;
     }
   }
 
   checkGraphName() {
     let new_name = this.editGraphForm.controls["graph_name"].value;
-    let old_name = this.graphEditingService.graph.name;
+    let old_name = this.graph.name;
     if (new_name != old_name && new_name != "" && localStorage.getItem(new_name)) {
       this.graphNameAlready = true;
     } else {
@@ -235,6 +239,10 @@ export class SidebarEditComponent implements OnInit, OnChanges {
     this.updateGraphView.emit(3);
   }
 
+  addNodeDataGroup() {
+    
+  }
+
   addNodeDataField() {
     this.nodePropId += 1;
     const dato = this.formBuilder.group({
@@ -267,7 +275,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
 
   checkNodeId(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      if (control.value && this.graphEditingService.graph.nodes.find(nodo => nodo.id == control.value && !this.nodeEditing)) {
+      if (control.value && this.graph.nodes.find(nodo => nodo.id == control.value && !this.nodeEditing)) {
         return { msg: "Already exists a node with this id" };
       } else return null
     }
@@ -289,10 +297,12 @@ export class SidebarEditComponent implements OnInit, OnChanges {
         if (source && target) {
           if (source == target) {
             return { loop: true, msg: "Source and target must be different" };
+          } else if (this.graph.nodes.find(nodo => nodo.id == target && nodo.type == "cond" && this.graph.nodes.find(nodo => nodo.id == source && nodo.type == "cond"))) {
+            return { cond2cond: true, msg: "Can't add edge from condition to condition" };
           } else {
             let id = "_" + source + "-" + target;
-            if (this.graphEditingService.graph.edges.find(arco => arco.id == id && !this.edgeEditing)) {
-              return { already: true, msg: "Already existst an edge with this id" };
+            if (this.graph.edges.find(arco => arco.id == id && !this.edgeEditing) && !this.edgeEditing) {
+              return { already: true, msg: "Already existst an edge between these nodes" };
             }
           }
         }
@@ -303,9 +313,20 @@ export class SidebarEditComponent implements OnInit, OnChanges {
 
   checkEdgeNode(): ValidatorFn {
     return (control) => {
-      if (control.value && !this.graphEditingService.graph.nodes.find(nodo => nodo.id == control.value)) {
+      if (control.value && !this.graph.nodes.find(nodo => nodo.id == control.value)) {
         return { notFound: true };
       } else return null;
+    }
+  }
+
+  //controlla non ci siano gia archi entranti nel nodo condizione
+  checkCondNode(): ValidatorFn {
+    return (control) => {
+      if (this.graph.nodes.find(nodo => nodo.id == control.value && nodo.type == "cond")) {
+        if (this.graph.edges.find(arco => arco.target == control.value) && !this.edgeEditing) {
+          return { already2cond: true, msg: "Already exists an edge to that condition"};
+        }
+      } return null;
     }
   }
 

@@ -85,35 +85,19 @@ export class GraphViewEditComponent implements OnInit {
   }
 
   //triggered after adding/editing edge
-  checkConditions(edge: Edge) : boolean {
-    //salvo nodo sorgente e destinazione
+  checkConditions(edge: Edge) : number { //ritorna: 0 arco grigio, 1 arco rosso, 2 arco verde
+    //salvo nodo sorgente
     const source_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.source);
     const target_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.target);
 
-    // se per qualche errore uno dei due non c'e, esco
-    if (!source_node || !target_node) {
-      return false;
-    }
-
-    if (source_node.type == "cond") {
-      return this.checkConditionNode(source_node);
-    } else if (target_node.type == "cond") {
-      return this.checkConditionNode(target_node);
-    } else return false;
+    if (source_node && target_node && source_node.type == "cond") {
+      if (this.checkAllProps(source_node, target_node)) {
+        return 2;
+      } else return 1;
+    } else return 0;
   }
 
-  //funzione che ci dice se un nodo condizione e soddisfatto o no (cioe se il nodo task che ha in ingresso attiva questo nodo o meno (se soddisfa tutte le condizioni del nodo condizione))
-  checkConditionNode(node: Node): boolean {
-    if (node.type != "cond") return false;
-
-    const task_node: Node|undefined = this.nodes.find(nodo => nodo.id == this.edges.find(arco => arco.target == node.id)?.source);
-
-    if (!task_node) return false;
-
-    return this.checkAllProps(node, task_node);
-  }
-
-  //true se tutte le condizioni del primo nodo parametro sono presenti e stesso valore nel secondo nodo parametro
+  //true se tutte le condizioni del PRIMO nodo parametro sono presenti e stesso valore nel SECONDO nodo parametro
   checkAllProps(node1: Node, node2: Node): boolean {
     const cond_1 = Object.entries(node1.properties).map(x => x[1]);
     const cond_2 = Object.entries(node2.properties).map(x => x[1]);
