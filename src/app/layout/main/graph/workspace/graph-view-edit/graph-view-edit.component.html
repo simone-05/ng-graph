@@ -1,15 +1,17 @@
 <ngx-graph class="chart-container" [update$]="update$" [center$]="center$" [zoomToFit$]="zoomToFit$" [view]="[900, 500]"
-  [nodes]="nodes" [links]="edges">
+  [nodes]="nodes" [links]="edges" [clusters]="clusters" layout="dagreCluster">
 
   <ng-template #nodeTemplate let-node>
-    <svg xmlns="http://www.w3.org/2000/svg" (click)="nodeClick(node)" (mouseenter)="moreDetails(node.id)" (mouseleave)="moreDetails(0)">
+    <svg xmlns="http://www.w3.org/2000/svg" (click)="nodeClick(node)" (mouseenter)="moreNodeDetails(node.id)"
+      (mouseleave)="moreNodeDetails(0)">
       <g *ngIf="node.type=='task'">
-        <g *ngIf="showDetails == node.id">
+        <g *ngIf="showNodeDetails == node.id">
           <!-- dettagli -->
           <g *ngFor="let prop of node.properties; let i=index">
-            <rect x="0" [attr.y]="(i==0)? 40: 30+((i+1)*30)" width="100" [attr.height]="(i==0)? 70:50" rx="10" fill="#a22">
+            <rect x="0" [attr.y]="(i==0)? 40: 30+((i+1)*30)" width="100" [attr.height]="(i==0)? 70:50" rx="10"
+              fill="#a22">
             </rect>
-            <text x="10" [attr.y]="40+((i+1)*35)" font-size="15" fill="#fff">{{prop.name}} {{prop.value}}</text>
+            <text x="10" [attr.y]="40+((i+1)*35)" font-size="15" fill="#fff">{{prop.name}}: {{prop.value}}</text>
           </g>
         </g>
 
@@ -17,20 +19,22 @@
         <rect x="0" y="10" width="100" height="50" rx="10" fill="#a22"></rect>
         <rect x="0" y="0" width="100" height="30" rx="10" fill="#811"></rect>
         <text x="20" y="20" font-size="15" fill="#fff">{{node.id}}</text>
-        <text x="10" y="50" font-size="15" fill="#fff">{{node.label}}</text>
+        <!-- <text x="10" y="50" font-size="15" fill="#fff">{{node.label}}</text> -->
+        <text x="10" y="50" font-size="15" fill="#fff">props: {{(Object.entries(node.properties)).length}}</text>
       </g>
 
       <g *ngIf="node.type=='cond'">
         <!-- conditions -> blue -->
-        <circle cx="30" cy="25" r="25" fill="#118"/>
-        <text x="26" y="30" font-size="15" fill="#fff">{{node.id}}</text>
+        <circle cx="30" cy="25" [attr.width]="1000" r="25" fill="#118" />
+        <text x="16" y="30" font-size="14" fill="#fff">AND</text>
 
-        <g *ngIf="showDetails == node.id">
+        <g *ngIf="showNodeDetails == node.id">
           <!-- dettagli -->
           <g *ngFor="let prop of node.properties; let i=index">
-            <rect x="0" [attr.y]="(i==0)? 60: 50+((i+1)*30)" width="100" [attr.height]="(i==0)? 70:50" rx="10" fill="#118">
+            <rect x="0" [attr.y]="(i==0)? 60: 50+((i+1)*30)" width="100" [attr.height]="(i==0)? 70:50" rx="10"
+              fill="#118">
             </rect>
-            <text x="10" [attr.y]="60+((i+1)*35)" font-size="15" fill="#fff">{{prop.name}} {{prop.value}}</text>
+            <text x="10" [attr.y]="60+((i+1)*35)" font-size="15" fill="#fff">{{prop.name}}: {{prop.value}}</text>
           </g>
         </g>
       </g>
@@ -40,13 +44,16 @@
 
 
   <ng-template #linkTemplate let-link>
-    <svg:g class="edge" (click)="linkClick(link)">
+    <svg:g class="edge" (click)="linkClick(link)" (mouseenter)="moreEdgeDetails(link.id)"
+      (mouseleave)="moreEdgeDetails(0)">
       <svg:circle width="15" height="15" fill="#000"></svg:circle>
-      <svg:path class="line" [ngClass]="{'edge-success': this.checkConditions(link)==2, 'edge-insuccess': this.checkConditions(link)==1}" stroke-width="5" marker-end="url(#arrow)"></svg:path>
-      <svg:text class="edge-label" text-anchor="middle">
+      <svg:path class="line"
+        [ngClass]="{'edge-success': this.checkConditions(link)==2, 'edge-insuccess': this.checkConditions(link)==1}"
+        stroke-width="5" marker-end="url(#arrow)"></svg:path>
+      <svg:text *ngIf="showEdgeDetails == link.id" class="edge-label" text-anchor="middle">
         <textPath class="text-path" [attr.href]="'#' + link.id" [style.dominant-baseline]="link.dominantBaseline"
-          startOffset="50%">
-          {{link.label}}
+          style="font-size: 20px;" startOffset="50%">
+          {{link.weight}}
         </textPath>
       </svg:text>
     </svg:g>
@@ -56,6 +63,13 @@
     <svg:marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="4" markerHeight="4" orient="auto">
       <svg:path d="M0,-5L10,0L0,5" class="arrow-head" />
     </svg:marker>
+  </ng-template>
+
+  <ng-template #clusterTemplate let-cluster>
+    <svg:g class="node cluster">
+      <svg:rect x="10" y="130" rx="5" ry="5" [attr.width]="cluster.dimension.width"
+        [attr.height]="cluster.dimension.height-180" [attr.fill]="'#0000'" stroke="#000" stroke-width="5" />
+    </svg:g>
   </ng-template>
 </ngx-graph>
 

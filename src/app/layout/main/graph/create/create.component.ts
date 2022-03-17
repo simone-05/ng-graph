@@ -1,4 +1,6 @@
+import { ClusterNode } from '@swimlane/ngx-graph';
 import { Component, OnInit} from '@angular/core';
+import { Edge } from '../graph-editing.service';
 
 @Component({
   selector: 'app-create',
@@ -10,6 +12,7 @@ export class CreateComponent implements OnInit {
   sidebar_switch = 0;
   selectedNode: any;
   selectedEdge: any;
+  selectedCluster: any;
 
   constructor() {
   }
@@ -35,6 +38,14 @@ export class CreateComponent implements OnInit {
   edgeIsSelected(edge: any) {
     this.selectedEdge = edge;
     this.sidebar_switch = 2;
+    setTimeout(() => {
+      this.sidebar_switch = 0;
+    }, 100);
+  }
+
+  clusterIsSelected(cluster: any) {
+    this.selectedCluster = cluster;
+    this.sidebar_switch = 3;
     setTimeout(() => {
       this.sidebar_switch = 0;
     }, 100);

@@ -2,11 +2,11 @@
   <div class="row">
 
     <div class="col-4 bg-dark">
-      <app-sidebar (updateGraphView)="switcher($event)" [selectedNode]="selectedNode" [selectedEdge]="selectedEdge" [forcedChange]="sidebar_switch"></app-sidebar>
+      <app-sidebar (updateGraphView)="switcher($event)" [selectedNode]="selectedNode" [selectedEdge]="selectedEdge" [selectedCluster]="selectedCluster" [forcedChange]="sidebar_switch"></app-sidebar>
     </div>
 
     <div class="col-8" style="padding: 0;">
-      <app-creation-view [update]="graph_switch" (selectedNode)="nodeIsSelected($event)" (selectedEdge)="edgeIsSelected($event)"></app-creation-view>
+      <app-creation-view [update]="graph_switch" (selectedNode)="nodeIsSelected($event)" (selectedEdge)="edgeIsSelected($event)" (selectedCluster)="clusterIsSelected($event)"></app-creation-view>
     </div>
 
   </div>

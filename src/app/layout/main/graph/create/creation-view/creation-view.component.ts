@@ -1,44 +1,51 @@
-import { GraphEditingService } from '../../graph-editing.service';
-import { Component, OnChanges, OnInit, SimpleChanges, Input, Output, EventEmitter } from '@angular/core';
+import { GraphEditingService, Node, Edge } from '../../graph-editing.service';
+import { Component, OnInit, SimpleChanges, OnChanges, Input, EventEmitter, Output } from '@angular/core';
 import { Subject } from 'rxjs';
 import * as _ from 'lodash';
-
+import { ClusterNode } from '@swimlane/ngx-graph';
 
 @Component({
   selector: 'app-creation-view',
   templateUrl: './creation-view.component.html',
   styleUrls: ['./creation-view.component.scss']
 })
-export class CreationViewComponent implements OnInit, OnChanges{
-  nodes = [
-    // {id: "1", label: 'nodo1', type: "cond"},
-    // {id: "2", label: 'nodo2', type: "task"}
+export class CreationViewComponent implements OnInit {
+  nodes: Node[] = [
+    // {id: "1", label: 'nodo1', type: "task", properties: {id: "1", name: "b", value: "1"}},
+    // {id: "2", label: 'nodo2', type: "task", properties: {id: "1", name: "a", value: "1"}},
+    // {id: "3", label: 'nodo3', type: "cond", properties: {id: "1", name: "a", value: "1"}},
   ];
-  edges = [
-    // {id: "1", label: "arco1", source: "1", target: "2"}
+  edges: Edge[] = [
+    // {id: "_1-3", label: "arco1", source: "1", target: "3", weight: 2},
+    // {id: "_3-2", label: "arco2", source: "3", target: "2", weight: 3},
   ];
+  clusters: ClusterNode[] = [];
+
   @Input() update: number = 0;
   update$: Subject<boolean> = new Subject();
   center$: Subject<boolean> = new Subject();
   zoomToFit$: Subject<boolean> = new Subject();
   @Output() selectedNode: any = new EventEmitter<any>();
   @Output() selectedEdge: any = new EventEmitter<any>();
+  @Output() selectedCluster: any = new EventEmitter<any>();
 
   Object = Object;
 
-  showDetails: number;
+  showNodeDetails: number;
+  showEdgeDetails: number;
+  showClusterDetails: number;
 
   constructor(public graphEditingService: GraphEditingService) {
-    this.showDetails = 0;
+    this.showNodeDetails = 0;
+    this.showEdgeDetails = 0;
+    this.showClusterDetails = 0;
 
     this.graphEditingService.graph$.subscribe((element) => {
       if (element) {
-      //   if (element.id) {
-      //     this.checkConditions(element);
-      //   }
-      //   console.log("ok1");
         this.updateGraph();
-        // console.log("ok2");
+        // console.log(this.nodes);
+        // console.log(this.edges);
+        // console.log(this.clusters);
       }
     });
   }
@@ -62,13 +69,15 @@ export class CreationViewComponent implements OnInit, OnChanges{
       default:
         break;
     }
-    // console.log(this.nodes);
-    // console.log(this.edges);
   }
 
   updateGraph() {
-    this.nodes = this.graphEditingService.graph$.getValue().nodes;
-    this.edges = this.graphEditingService.graph$.getValue().edges;
+    this.nodes = this.graphEditingService.graph.nodes;
+    this.edges = this.graphEditingService.graph.edges;
+    this.clusters = this.graphEditingService.graph.clusters;
+    // this.nodes = this.graphEditingService.graph$.getValue().nodes;
+    // this.edges = this.graphEditingService.graph$.getValue().edges;
+
     this.update$.next(true);
   }
 
@@ -78,22 +87,95 @@ export class CreationViewComponent implements OnInit, OnChanges{
 
   linkClick(link: any) {
     this.selectedEdge.emit(link);
-    console.log(link);
-
   }
 
   nodeClick(node: any) {
-    this.selectedNode.emit(node)
+    this.selectedNode.emit(node);
+  }
+
+  clusterClick(cluster: any) {
+    this.selectedCluster.emit(cluster);
   }
 
   //id è il numero del nodo se il mouse è sopra, 0 se il mouse esce dal nodo
-  moreDetails(id: number) {
-    this.showDetails = id;
+  moreNodeDetails(id: number) {
+    this.showNodeDetails = id;
   }
 
-  checkConditions(node: Node) {
-    console.log(node);
+  moreEdgeDetails(id: number) {
+    this.showEdgeDetails = id;
+  }
+
+  moreClusterDetails(id: number) {
+    this.showClusterDetails = id;
+  }
+
+  checkClusterConditions(cluster: ClusterNode, task_node: Node): boolean {
+    let inner_nodes: any[] = [];  //nodi dentro il cluster
+
+    //prendo i nodi interni al cluster
+    if (cluster.childNodeIds) {
+      inner_nodes = cluster.childNodeIds.map(id => this.graphEditingService.getNode(id));
+    }
+
+    let flag = false;
+    inner_nodes.forEach((node: Node) =>{
+      if (this.checkAllProps(node, task_node)) {
+        flag = true;
+        return;
+      }
+    })
+
+    return flag;
+  }
+
+  //triggered after adding/editing edge
+  checkConditions(edge: Edge): number { //ritorna: 0 arco grigio, 1 arco rosso, 2 arco verde
+    //salvo nodo sorgente
+
+    //la sorgente e un nodo condizione o un cluster condizione, in base a dove troviamo il suo id:
+    const source_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.source);
+    const source_cluster: ClusterNode|undefined = this.clusters.find(clus => clus.id == edge.source);
+    const target_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.target);
+
+    if (target_node) {
+      if (source_node && source_node.type == "cond") {
+        if (this.checkAllProps(source_node, target_node)) {
+          return 2;
+        } else return 1;
+      }
+      if (source_cluster) {
+        if (this.checkClusterConditions(source_cluster, target_node)) {
+          return 2;
+        } else return 1;
+      }
+    }
+
+    return 0;
+  }
+
+  //true se tutte le condizioni del PRIMO nodo parametro sono presenti e stesso valore nel SECONDO nodo parametro
+  checkAllProps(node1: Node, node2: Node): boolean {
+    const cond_1 = Object.entries(node1.properties).map(x => x[1]);
+    const cond_2 = Object.entries(node2.properties).map(x => x[1]);
+
+    let flag: boolean = true;
+
+    cond_1.forEach((element: any) => {
+      if (element.value == "") {
+        if (!cond_2.find((x: any) => x.name == element.name)) {
+          flag = false;
+          return
+        }
+      } else {
+        const x = cond_2.find((x: any) => x.name == element.name && x.value == element.value);
+        if (!x) {
+          flag = false;
+          return;
+        }
+      }
+    });
+
+    return flag;
   }
 }
-
-

@@ -1,7 +1,8 @@
-import { Node, Edge, GraphEditingService } from './../../graph-editing.service';
+import { GraphEditingService, Node, Edge } from '../../graph-editing.service';
 import { Component, OnInit, SimpleChanges, OnChanges, Input, EventEmitter, Output } from '@angular/core';
 import { Subject } from 'rxjs';
 import * as _ from 'lodash';
+import { ClusterNode } from '@swimlane/ngx-graph';
 
 @Component({
   selector: 'app-graph-view-edit',
@@ -10,10 +11,14 @@ import * as _ from 'lodash';
 })
 export class GraphViewEditComponent implements OnInit {
   nodes: Node[] = [
-    //     {id: "1", label: 'nodo1', type: "cond"},
+    // {id: "1", label: 'nodo1', type: "cond"},
     // {id: "2", label: 'nodo2', type: "task"}
   ];
-  edges: Edge[] = [];
+  edges: Edge[] = [
+    // {id: "1", label: "arco1", source: "1", target: "2"}
+  ];
+  clusters: ClusterNode[] = [];
+
   @Input() update: number = 0;
   update$: Subject<boolean> = new Subject();
   center$: Subject<boolean> = new Subject();
@@ -23,10 +28,12 @@ export class GraphViewEditComponent implements OnInit {
 
   Object = Object;
 
-  showDetails: number;
+  showNodeDetails: number;
+  showEdgeDetails: number;
 
   constructor(public graphEditingService: GraphEditingService) {
-    this.showDetails = 0;
+    this.showNodeDetails = 0;
+    this.showEdgeDetails = 0;
 
     this.graphEditingService.graph$.subscribe((element) => {
       if (element) {
@@ -77,15 +84,20 @@ export class GraphViewEditComponent implements OnInit {
 
   nodeClick(node: any) {
     this.selectedNode.emit(node);
+    console.log(this.graphEditingService.getCluster("1"));
   }
 
   //id è il numero del nodo se il mouse è sopra, 0 se il mouse esce dal nodo
-  moreDetails(id: number) {
-    this.showDetails = id;
+  moreNodeDetails(id: number) {
+    this.showNodeDetails = id;
+  }
+
+  moreEdgeDetails(id: number) {
+    this.showEdgeDetails = id;
   }
 
   //triggered after adding/editing edge
-  checkConditions(edge: Edge) : number { //ritorna: 0 arco grigio, 1 arco rosso, 2 arco verde
+  checkConditions(edge: Edge): number { //ritorna: 0 arco grigio, 1 arco rosso, 2 arco verde
     //salvo nodo sorgente
     const source_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.source);
     const target_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.target);

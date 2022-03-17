@@ -2,12 +2,13 @@ import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { ClusterNode } from '@swimlane/ngx-graph';
 import { DatePipe } from '@angular/common';
+import { cluster } from 'd3';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GraphEditingService {
-  graph: Graph = {date: "", name: "", description: "", nodes: [], edges: []};
+  graph: Graph = {date: "", name: "", description: "", nodes: [], edges: [], clusters: []};
   graph$: BehaviorSubject<Graph|any> = new BehaviorSubject<Graph|any>(null);
 
   constructor(private datePipe: DatePipe) { }
@@ -19,6 +20,7 @@ export class GraphEditingService {
     this.graph.description = graph_description;
     this.graph.nodes = [];
     this.graph.edges = [];
+    this.graph.clusters = [];
     this.graph$.next(this.graph);
     return true;
   }
@@ -56,6 +58,15 @@ export class GraphEditingService {
     return false;
   }
 
+  addCluster(cluster: ClusterNode) : boolean {
+    if (cluster && !this.graph.clusters.find(clus => clus.id == cluster.id)) {
+      this.graph.clusters.push(cluster);
+      this.graph$.next(cluster);
+      return true;
+    }
+    return false;
+  }
+
   editNode(node: Node) : boolean{
     let index = this.graph.nodes.indexOf(this.graph.nodes.find(nodo => nodo.id == node.id)||node);
     if (index >= 0) {
@@ -76,6 +87,16 @@ export class GraphEditingService {
     return false;
   }
 
+  editCluster(cluster: ClusterNode) : boolean {
+    let index = this.graph.clusters.indexOf(this.graph.clusters.find(clus => clus.id == cluster.id)||cluster);
+    if (index >= 0) {
+      this.graph.clusters[index] = cluster;
+      this.graph$.next(cluster);
+      return true;
+    }
+    return false;
+  }
+
   deleteNode(id: string) {
     let del_edges: Edge[] = [];
     this.graph.nodes.forEach((node,index) => {
@@ -83,6 +104,14 @@ export class GraphEditingService {
         this.graph.nodes.splice(index,1);
         //elimino anche gli archi a lui collegati
         del_edges = this.graph.edges.filter(edge => edge.source == id || edge.target == id);
+        //elimino anche le sue entry nei vari cluster
+        this.graph.clusters.forEach(cluster => {
+          if (cluster.childNodeIds) {
+            cluster.childNodeIds.forEach((ids, index) => {
+              if (ids == id) cluster.childNodeIds?.splice(index,1);
+            });
+          }
+        });
       }
     });
 
@@ -102,6 +131,15 @@ export class GraphEditingService {
     this.graph$.next(this.graph);
   }
 
+  deleteCluster(id: string) {
+    this.graph.clusters.forEach((clus,index) => {
+      if (clus.id == id) {
+        this.graph.clusters.splice(index,1);
+      }
+    })
+    this.graph$.next(this.graph);
+  }
+
   saveGraphInStorage() {
     localStorage.setItem(this.graph.name, JSON.stringify(this.graph));
   }
@@ -112,7 +150,25 @@ export class GraphEditingService {
   clearGraph() {
     this.graph.nodes=[];
     this.graph.edges=[];
+    this.graph.clusters=[];
     this.graph$.next(this.graph);
+  }
+
+  getNode(id: string): Node|undefined {
+    return this.graph.nodes.find(nodo => nodo.id == id);
+  }
+
+  getEdge(id: string): Edge|undefined {
+    return this.graph.edges.find(arco => arco.id == id);
+  }
+
+  getCluster(id: string): ClusterNode|undefined {
+    return this.graph.clusters.find(clus => clus.id == id);
+  }
+
+  getConds(node: Node): any[] {
+    const conds: any[] = Object.entries(node.properties).map(x => x[1]);
+    return conds;
   }
 }
 
@@ -121,9 +177,10 @@ export interface Edge {
   label: string,
   source: string,
   target: string,
-  properties: {
-    [indice: string]: string,
-  },
+  weight: number,
+  // properties: {
+  //   [indice: string]: string,
+  // },
 }
 
 export interface Node {
@@ -140,5 +197,6 @@ export interface Graph {
   name: string,
   description: string,
   nodes: Node[],
-  edges: Edge[]
+  edges: Edge[],
+  clusters: ClusterNode[]
 }
