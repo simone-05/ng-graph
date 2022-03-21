@@ -83,7 +83,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       cluster_id: [null, [Validators.required, this.checkClusterId()]],
       cluster_label: null,
       cluster_nodes: this.formBuilder.array([]),
-    })
+    });
   }
 
   ngOnInit(): void {
