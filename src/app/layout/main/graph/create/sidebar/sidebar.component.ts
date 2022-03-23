@@ -18,6 +18,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   edgeForm: FormGroup;
   nodePropForm: FormGroup;
   clusterForm: FormGroup;
+  condForm: FormGroup;
   // edgePropForm: FormGroup;
 
   nodePropId: number;
@@ -35,6 +36,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   clusterEditing: boolean = false;
 
   Object = Object;
+  counter :number = 0;
 
   constructor(public graphEditingService: GraphEditingService, private formBuilder: FormBuilder, private router: Router) {
     this.view = "node_task";
@@ -53,7 +55,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       node_id: [null, [Validators.required, this.checkNodeId()]],
       node_label: null,
       node_type: null,
-      node_cluster: [null, this.checkClusterExists()],
+      // node_cluster: [null, this.checkClusterExists()],
       node_data: this.formBuilder.array([]),
     });
     // this.nodeForm.valueChanges.subscribe(()=>console.log(this.nodeForm.value));
@@ -62,6 +64,15 @@ export class SidebarComponent implements OnInit, OnChanges {
       node_prop_name: [null, [Validators.required, this.checkNodeProperty()]],
       node_prop_value: null,
     });
+
+    this.condForm = this.formBuilder.group({
+      cond_id: null,
+      cond_source: [null, [Validators.required, this.checkCondNodeTask()]],
+      cond_target: [null, [Validators.required, this.checkCondNodeTask()]],
+      cond_label: null,
+      cond_cluster: null,
+      cond_data: this.formBuilder.array([]),
+    }, {validators: this.checkCondId()});
 
     this.edgeForm = this.formBuilder.group({
       edge_id: null,
@@ -98,9 +109,10 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.selectedEdgeInputChange(this.selectedEdge);
     }
 
-    if (this.forcedChange == 3) {
-      this.selectedClusterInputChange(this.selectedCluster);
-    }
+    // if (this.forcedChange == 3) {
+    //   this.selectedClusterInputChange(this.selectedCluster);
+    // }
+    this.counter++;
   }
 
   get graph(): Graph {
@@ -109,6 +121,10 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   get nodeDataForm(): FormArray {
     return this.nodeForm.get("node_data") as FormArray;
+  }
+
+  get condDataForm(): FormArray {
+    return this.condForm.get("cond_data") as FormArray;
   }
 
   get clusterNodes(): FormArray {
@@ -141,11 +157,11 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.nodeForm.controls['node_type'].setValue(this.view == "node_cond"? "cond":"task");
     let node_type = this.nodeForm.controls["node_type"].value;
     let node_data = this.nodeForm.controls["node_data"].value;
-    let node_cluster = this.nodeForm.controls["node_cluster"].value;
-    if (node_cluster) {
-      let clus = this.graphEditingService.getCluster(node_cluster);
-      clus?.childNodeIds?.push(node_id);
-    }
+    // let node_cluster = this.nodeForm.controls["node_cluster"].value;
+    // if (node_cluster) {
+    //   let clus = this.graphEditingService.getCluster(node_cluster);
+    //   clus?.childNodeIds?.push(node_id);
+    // }
     let node: Node = {id: node_id, label: node_label, type: node_type, properties: node_data};
     if (this.nodeEditing) {
       this.graphEditingService.editNode(node);
@@ -153,6 +169,50 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.graphEditingService.addNode(node);
     }
     this.clearNodeInput();
+  }
+
+  tryCond() {
+    let cond_source = this.condForm.controls["cond_source"].value;
+    let cond_target = this.condForm.controls["cond_target"].value;
+    let cond_label = this.condForm.controls["cond_label"].value||"";
+    let cond_data = this.condForm.controls["cond_data"].value;
+    this.condForm.controls["cond_cluster"].setValue("clus_"+cond_source+"-"+cond_target);
+    let cond_cluster = this.condForm.controls["cond_cluster"].value;
+    let cluster_already = this.graph.clusters.find(clus => clus.id == cond_cluster);
+
+    if (!cluster_already) {
+      let in_node: Node = {id: "cin_"+cond_source+"-"+cond_target, label: "", type: "clus", properties: {}};
+      let out_node: Node = {id: "cout_"+cond_source+"-"+cond_target, label: "", type: "clus", properties: {}};
+      this.graphEditingService.addNode(in_node);
+      this.graphEditingService.addNode(out_node);
+      let in_edge: Edge = {id: "_"+cond_source+"-"+in_node.id, source: cond_source, target: in_node.id, label: "", weight: 1};
+      let out_edge: Edge = {id: "_"+out_node.id+"-"+cond_target, source: out_node.id, target: cond_target, label: "", weight: 1};
+      this.graphEditingService.addEdge(in_edge);
+      this.graphEditingService.addEdge(out_edge);
+      this.graphEditingService.deleteEdge("_"+cond_source+"-"+cond_target);
+      let cluster: ClusterNode = { id: "clus_"+cond_source+"-"+cond_target, childNodeIds: [in_node.id, out_node.id]};
+      this.graphEditingService.addCluster(cluster);
+    }
+
+    // Imposto l'id del nodo condizione, la cui ultima parte e un numero variabile:
+    // Cerco tra i nodi condizione, quelli che stanno tra gli stessi nodi task, e ne estraggo l'utlima parte, il numero che mi serve (se non c'erano gia nodi condizione presenti allora lo imposto a zero)
+    if (!this.nodeEditing) {
+      let last_number: number = Number(this.graph.nodes.filter(node => node.id.split("_")[0] == "c" && node.id.split("_")[1] == cond_source + "-" + cond_target).pop()?.id.split("_")[2]||"0");
+      // lo incremento
+      last_number += 1;
+      // costruisco l'id del nuovo nodo condizione
+      this.condForm.controls["cond_id"].setValue("c_"+cond_source+"-"+cond_target+"_"+String(last_number));
+    }
+    let cond_id = this.condForm.controls["cond_id"].value;
+
+    let node: Node = {id: cond_id, label: cond_label, type: "cond", properties: cond_data};
+    if (this.nodeEditing) {
+      this.graphEditingService.editNode(node);
+    } else {
+      this.graphEditingService.addNode(node);
+      this.graphEditingService.addToCluster(cond_cluster, node);
+    }
+    this.clearCondInput();
   }
 
   tryEdge() {
@@ -197,6 +257,21 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.clearEdgeInput();
   }
 
+  deleteCond() {
+    let cond_id = this.condForm.controls["cond_id"].value;
+    this.graphEditingService.deleteNode(cond_id);
+    //cancello il cluster e i suoi edge, se e l'ultimo nodo condizione al suo interno:
+    let tasks = cond_id.split("_")[1];
+    let cluster_id = "clus_"+tasks;
+    if (!this.graph.clusters.find(clus => clus.id == cluster_id)?.childNodeIds?.find(id => id.split("_")[0] == "c")) {
+      this.graphEditingService.deleteCluster(cluster_id);
+      this.graphEditingService.deleteNode("cin_"+tasks);
+      this.graphEditingService.deleteNode("cout_"+tasks);
+      this.graphEditingService.addEdge({id: "_"+tasks, label: "", source: tasks.split("-")[0], target: tasks.split("-")[1], weight: 1});
+    }
+    this.clearCondInput();
+  }
+
   deleteCluster() {
     let cluster_id = this.clusterForm.controls["cluster_id"].value;
     this.graphEditingService.deleteCluster(cluster_id);
@@ -211,11 +286,18 @@ export class SidebarComponent implements OnInit, OnChanges {
     // this.nodeDataForm.updateValueAndValidity();
   }
 
+  clearCondInput() {
+    this.nodeEditing = false;
+    this.nodePropId = 0;
+    this.condForm.reset();
+    this.condForm.controls["cond_data"] = this.formBuilder.array([]);
+  }
+
   clearEdgeInput() {
     this.edgeEditing = false;
     this.edgePropId = 0;
     this.edgeForm.reset();
-    // this.nodeForm.controls["edge_data"] = this.formBuilder.array([]);
+    // this.edgeForm.controls["edge_data"] = this.formBuilder.array([]);
     this.edgeForm.controls["edge_weight"].setValue(1);
   }
 
@@ -227,27 +309,45 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   selectedNodeInputChange(node: any) {
+    if (node.type == "clus") return;
     this.clearNodeInput();
+    this.clearCondInput();
     this.nodeEditing = true;
-    this.nodeForm.controls["node_id"].setValue(node.id);
-    this.nodeForm.controls["node_label"].setValue(node.label);
-    this.graph.clusters.forEach(clus => {
-      clus.childNodeIds?.forEach(ids => {
-        if (ids == node.id) {
-          this.nodeForm.controls["node_cluster"].setValue(clus.id);
-          return;
-        }
+    if (node.type == "task") {
+      this.nodeForm.controls["node_id"].setValue(node.id);
+      this.nodeForm.controls["node_label"].setValue(node.label);
+      this.graph.clusters.forEach(clus => {
+        clus.childNodeIds?.forEach(ids => {
+          if (ids == node.id) {
+            this.nodeForm.controls["node_cluster"].setValue(clus.id);
+            return;
+          }
+        });
       });
-    });
 
-    node.properties.forEach((element: any) => {
-      const dato = this.formBuilder.group({
-        id: element.id,
-        name: element.name,
-        value: element.value,
+      node.properties.forEach((element: any) => {
+        const dato = this.formBuilder.group({
+          id: element.id,
+          name: element.name,
+          value: element.value,
+        });
+        this.nodeDataForm.push(dato);
       });
-      this.nodeDataForm.push(dato);
-    });
+    } else if (node.type == "cond") {
+      this.condForm.controls["cond_id"].setValue(node.id);
+      this.condForm.controls["cond_label"].setValue(node.label);
+      this.condForm.controls["cond_source"].setValue(node.id.split("_")[1].split("-")[0]);
+      this.condForm.controls["cond_target"].setValue(node.id.split("_")[1].split("-")[1]);
+
+      node.properties.forEach((element: any) => {
+        const dato = this.formBuilder.group({
+          id: element.id,
+          name: element.name,
+          value: element.value,
+        });
+        this.condDataForm.push(dato);
+      });
+    }
     this.view = (node.type == "cond" ? "node_cond":"node_task");
   }
 
@@ -284,7 +384,6 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.view = "cluster";
   }
 
-
   saveGraph() {
     this.graphEditingService.saveGraphInStorage();
     this.router.navigate(["/app/graph/list"]);
@@ -293,8 +392,9 @@ export class SidebarComponent implements OnInit, OnChanges {
   start_over() {
     this.graphEditingService.clearGraph();
     this.clearNodeInput();
+    this.clearCondInput();
     this.clearEdgeInput();
-    this.clearClusterInput();
+    // this.clearClusterInput();
   }
 
   changedView(insertChoice: string) {
@@ -324,6 +424,17 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.nodePropForm.reset();
   }
 
+  addCondDataField() {
+    this.nodePropId += 1;
+    const dato = this.formBuilder.group({
+      id: String(this.nodePropId),
+      name: this.nodePropForm.controls["node_prop_name"].value,
+      value: this.nodePropForm.controls["node_prop_value"].value||"",
+    });
+    this.condDataForm.push(dato);
+    this.nodePropForm.reset();
+  }
+
   editNodeDataField(name: string) {
 
   }
@@ -343,18 +454,21 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.nodeDataForm.removeAt(n);
   }
 
+  removeCondDataField(n: number) {
+    this.condDataForm.removeAt(n);
+  }
+
   // removeEdgeDataField(n: number) {
   //   this.edgeDataForm.removeAt(n);
   // }
 
   checkNodeId(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      if (control.value && !this.nodeEditing) {
-        if (this.graph.nodes.find(nodo => nodo.id == control.value)) {
-          return { already: true, msg: "Already exists a node with this id" };
-        }
-        if (this.graph.clusters.find(clus => clus.id == control.value)) {
-          return { already: true, msg: "Already exists a cluster with this id"};
+      if (control.value) {
+        if (!this.nodeEditing) {
+          if (this.graph.nodes.filter(node => node.type=="task").find(nodo => nodo.id == control.value)) {
+            return { already: true, msg: "Already exists a node with this id" };
+          }
         }
       }
       return null;
@@ -364,30 +478,24 @@ export class SidebarComponent implements OnInit, OnChanges {
   checkNodeProperty(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       if (control.value) {
-        if (this.nodeForm.controls["node_data"].value.find((props: any) => props.name == control.value)) {
-          return {already: true, msg: "Already existst a property with this name" };
-        }
+        if (this.view == "node_task") {
+          if (this.nodeForm.controls["node_data"].value.find((props: any) => props.name == control.value)) {
+            return {already: true, msg: "Already existst a property with this name" };
+          }
 
-        // non posso aggiungere una condizione se non e presente nei nodi task destinatari
-        if (this.view == "node_cond" && this.graph.edges.find((edge: Edge) => edge.source == this.nodeForm.controls["node_id"].value)) {
-          let task_nodes: Node[] = [];
-          let task_conds: any[] = [];
+          // non posso aggiungere una condizione se non e presente nei nodi task destinatari
+          // if (this.view == "node_cond" && this.graph.edges.find((edge: Edge) => edge.source == this.condForm.controls["cond_id"].value)) {
+        } else if (this.view == "node_cond") {
+          if (this.condForm.controls["cond_data"].value.find((props: any) => props.name == control.value)) {
+            return { already: true, msg: "Already existst a property with this name" };
+          }
+
           let flag: boolean = false;
-
-          this.graphEditingService.graph.edges.forEach(element => {
-            if (element.source == this.nodeForm.controls['node_id'].value) {
-              let node = this.graphEditingService.getNode(element.target);
-              if (node) {
-                task_nodes.push(node);
-                let node_conds = this.graphEditingService.getConds(node);
-                if (node_conds) {
-                  node_conds.forEach(element => {
-                    task_conds.push(element);
-                  });
-                }
-              }
-            }
-          });
+          let task_node = this.graphEditingService.getNode(this.condForm.controls["cond_target"].value);
+          let task_conds: any[] = [];
+          if (task_node) {
+            task_conds = this.graphEditingService.getConds(task_node);
+          }
 
           task_conds.forEach(element => {
             if (element.name == control.value) {
@@ -399,7 +507,6 @@ export class SidebarComponent implements OnInit, OnChanges {
           if (flag) return null;
           else return {noCondName: true, msg: "This condition isn't present in any of the targeting task nodes"};
         }
-
       }
       return null;
     }
@@ -490,6 +597,38 @@ export class SidebarComponent implements OnInit, OnChanges {
       if (control.value && !this.graph.clusters.find(clus => clus.id == control.value)) {
         return {clusterNotFound: true, msg: "Cluster not found"}
       } else return null;
+    }
+  }
+
+  checkCondNodeTask(): ValidatorFn {
+    return (control) => {
+      if (control.value) {
+        if (!this.graph.nodes.filter(node=>node.type=="task").find(nodo => nodo.id == control.value)) {
+          return { notFound: true };
+        }
+      }
+      return null;
+    }
+  }
+
+  checkCondId(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (control.value) {
+        let source = control.value.cond_source;
+        let target = control.value.cond_target;
+        if (source && target) {
+          source = control.value.cond_source;
+          target = control.value.cond_target;
+          if (source == target) {
+            return { loop: true, msg: "Source and target must be different" };
+          } else {
+            if (!this.graph.edges.find(edge => edge.source == source && edge.target == target) && !this.graph.clusters.find(clus => clus.id == "clus_"+source+"-"+target)){
+              return { edgeNotFound: true, msg: "Dosn't exist an edge between these nodes" };
+            }
+          }
+        }
+      }
+      return null;
     }
   }
 

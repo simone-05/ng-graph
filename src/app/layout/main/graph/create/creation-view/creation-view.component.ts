@@ -19,7 +19,9 @@ export class CreationViewComponent implements OnInit {
     // {id: "_1-3", label: "arco1", source: "1", target: "3", weight: 2},
     // {id: "_3-2", label: "arco2", source: "3", target: "2", weight: 3},
   ];
-  clusters: ClusterNode[] = [];
+  clusters: ClusterNode[] = [
+    // {id: "1", label: "ci", childNodeIds: ["1", "2"]},
+  ];
 
   @Input() update: number = 0;
   update$: Subject<boolean> = new Subject();
@@ -115,8 +117,10 @@ export class CreationViewComponent implements OnInit {
 
     //prendo i nodi interni al cluster
     if (cluster.childNodeIds) {
-      inner_nodes = cluster.childNodeIds.map(id => this.graphEditingService.getNode(id));
+      inner_nodes = cluster.childNodeIds.filter(id => id.split("_")[0]=="c").map(id => this.graphEditingService.getNode(id));
     }
+
+    console.log(inner_nodes);
 
     let flag = false;
     inner_nodes.forEach((node: Node) =>{
@@ -129,23 +133,16 @@ export class CreationViewComponent implements OnInit {
     return flag;
   }
 
-  //triggered after adding/editing edge
   checkConditions(edge: Edge): number { //ritorna: 0 arco grigio, 1 arco rosso, 2 arco verde
     //salvo nodo sorgente
-
-    //la sorgente e un nodo condizione o un cluster condizione, in base a dove troviamo il suo id:
     const source_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.source);
-    const source_cluster: ClusterNode|undefined = this.clusters.find(clus => clus.id == edge.source);
+    //salvo nodo destinazione
     const target_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.target);
 
-    if (target_node) {
-      if (source_node && source_node.type == "cond") {
-        if (this.checkAllProps(source_node, target_node)) {
-          return 2;
-        } else return 1;
-      }
-      if (source_cluster) {
-        if (this.checkClusterConditions(source_cluster, target_node)) {
+    if (target_node && target_node.type == "task") {
+      if (source_node && source_node.type == "clus") {
+        let clus = this.clusters.find(clus => clus.id == "clus_"+source_node.id.split("_")[1]);
+        if (clus && this.checkClusterConditions((clus), target_node)) {
           return 2;
         } else return 1;
       }

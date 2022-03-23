@@ -1,8 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { ClusterNode } from '@swimlane/ngx-graph';
+import { ClusterNode, NgxGraphModule } from '@swimlane/ngx-graph';
 import { DatePipe } from '@angular/common';
-import { cluster } from 'd3';
 
 @Injectable({
   providedIn: 'root'
@@ -97,6 +96,20 @@ export class GraphEditingService {
     return false;
   }
 
+  addToCluster(clusterId: string, node: Node) : boolean {
+    let cluster = this.graph.clusters.find(clus=>clus.id==clusterId);
+    if (cluster) {
+      let index = this.graph.clusters.indexOf(cluster);
+      if (index >= 0 && !cluster.childNodeIds?.find(id => id == node.id)) {
+          cluster.childNodeIds?.push(node.id);
+          this.graph.clusters[index] = cluster;
+          this.graph$.next(cluster);
+          return true;
+      }
+    }
+    return false;
+  }
+
   deleteNode(id: string) {
     let del_edges: Edge[] = [];
     this.graph.nodes.forEach((node,index) => {
@@ -186,7 +199,7 @@ export interface Edge {
 export interface Node {
   id: string,
   label: string,
-  type: "cond"|"task",
+  type: string,
   properties: {
     [indice: string]: string,
   },
