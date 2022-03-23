@@ -68,8 +68,6 @@ export class CreationViewComponent implements OnInit {
       case 3:
         this.zoomToFit$.next(true)
         break;
-      case 4:
-
       default:
         break;
     }

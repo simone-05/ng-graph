@@ -36,7 +36,6 @@ export class SidebarComponent implements OnInit, OnChanges {
   clusterEditing: boolean = false;
 
   Object = Object;
-  counter :number = 0;
 
   constructor(public graphEditingService: GraphEditingService, private formBuilder: FormBuilder, private router: Router) {
     this.view = "node_task";
@@ -67,7 +66,7 @@ export class SidebarComponent implements OnInit, OnChanges {
 
     this.condForm = this.formBuilder.group({
       cond_id: null,
-      cond_source: [null, [Validators.required, this.checkCondNodeTask()]],
+      cond_source: null,
       cond_target: [null, [Validators.required, this.checkCondNodeTask()]],
       cond_label: null,
       cond_cluster: null,
@@ -112,7 +111,6 @@ export class SidebarComponent implements OnInit, OnChanges {
     // if (this.forcedChange == 3) {
     //   this.selectedClusterInputChange(this.selectedCluster);
     // }
-    this.counter++;
   }
 
   get graph(): Graph {
@@ -181,17 +179,21 @@ export class SidebarComponent implements OnInit, OnChanges {
     let cluster_already = this.graph.clusters.find(clus => clus.id == cond_cluster);
 
     if (!cluster_already) {
-      let in_node: Node = {id: "cin_"+cond_source+"-"+cond_target, label: "", type: "clus", properties: {}};
-      let out_node: Node = {id: "cout_"+cond_source+"-"+cond_target, label: "", type: "clus", properties: {}};
-      this.graphEditingService.addNode(in_node);
-      this.graphEditingService.addNode(out_node);
-      let in_edge: Edge = {id: "_"+cond_source+"-"+in_node.id, source: cond_source, target: in_node.id, label: "", weight: 1};
-      let out_edge: Edge = {id: "_"+out_node.id+"-"+cond_target, source: out_node.id, target: cond_target, label: "", weight: 1};
-      this.graphEditingService.addEdge(in_edge);
-      this.graphEditingService.addEdge(out_edge);
-      this.graphEditingService.deleteEdge("_"+cond_source+"-"+cond_target);
-      let cluster: ClusterNode = { id: "clus_"+cond_source+"-"+cond_target, label: "", childNodeIds: [in_node.id, out_node.id]};
+      let cluster: ClusterNode = { id: "clus_"+cond_source+"-"+cond_target, label: "", childNodeIds: []};
       this.graphEditingService.addCluster(cluster);
+      if (cond_source) {
+        let in_node: Node = {id: "cin_"+cond_source+"-"+cond_target, label: "", type: "clus", properties: {}};
+        this.graphEditingService.addNode(in_node);
+        let in_edge: Edge = {id: "_"+cond_source+"-"+in_node.id, source: cond_source, target: in_node.id, label: "", weight: 1};
+        this.graphEditingService.addEdge(in_edge);
+        this.graphEditingService.addToCluster(cluster.id, in_node);
+      }
+      let out_node: Node = {id: "cout_"+cond_source+"-"+cond_target, label: "", type: "clus", properties: {}};
+      this.graphEditingService.addNode(out_node);
+      let out_edge: Edge = {id: "_"+out_node.id+"-"+cond_target, source: out_node.id, target: cond_target, label: "", weight: 1};
+      this.graphEditingService.addEdge(out_edge);
+      this.graphEditingService.addToCluster(cluster.id, out_node);
+      // this.graphEditingService.deleteEdge("_"+cond_source+"-"+cond_target);
     }
 
     // Imposto l'id del nodo condizione, la cui ultima parte e un numero variabile:
@@ -267,7 +269,6 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.graphEditingService.deleteCluster(cluster_id);
       this.graphEditingService.deleteNode("cin_"+tasks);
       this.graphEditingService.deleteNode("cout_"+tasks);
-      this.graphEditingService.addEdge({id: "_"+tasks, label: "", source: tasks.split("-")[0], target: tasks.split("-")[1], weight: 1});
     }
     this.clearCondInput();
   }

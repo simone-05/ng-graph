@@ -2,7 +2,7 @@ import { GraphEditingService, Node, Edge } from '../../graph-editing.service';
 import { Component, OnInit, SimpleChanges, OnChanges, Input, EventEmitter, Output } from '@angular/core';
 import { Subject } from 'rxjs';
 import * as _ from 'lodash';
-import { ClusterNode } from '@swimlane/ngx-graph';
+import { ClusterNode, DagreClusterLayout } from '@swimlane/ngx-graph';
 
 @Component({
   selector: 'app-graph-view-edit',
@@ -18,6 +18,7 @@ export class GraphViewEditComponent implements OnInit {
     // {id: "1", label: "arco1", source: "1", target: "2"}
   ];
   clusters: ClusterNode[] = [];
+  layout: any;
 
   @Input() update: number = 0;
   update$: Subject<boolean> = new Subject();
@@ -30,18 +31,20 @@ export class GraphViewEditComponent implements OnInit {
 
   showNodeDetails: number;
   showEdgeDetails: number;
+  showClusterDetails: number;
 
   constructor(public graphEditingService: GraphEditingService) {
     this.showNodeDetails = 0;
     this.showEdgeDetails = 0;
+    this.showClusterDetails = 0;
+    this.layout = new DagreClusterLayout();
 
     this.graphEditingService.graph$.subscribe((element) => {
       if (element) {
         this.updateGraph();
-
-        if (element.source) { //se aggiungiamo/editiamo un arco
-          // this.checkConditions(element);
-        }
+        // console.log(this.nodes);
+        // console.log(this.edges);
+        // console.log(this.clusters);
       }
     });
   }
@@ -66,8 +69,12 @@ export class GraphViewEditComponent implements OnInit {
   }
 
   updateGraph() {
+    // this.clusters = [...this.graphEditingService.graph.clusters];
+    // this.nodes = [...this.graphEditingService.graph.nodes];
+    // this.edges = [...this.graphEditingService.graph.edges];
     this.nodes = this.graphEditingService.graph.nodes;
     this.edges = this.graphEditingService.graph.edges;
+    this.clusters = this.graphEditingService.graph.clusters;
     // this.nodes = this.graphEditingService.graph$.getValue().nodes;
     // this.edges = this.graphEditingService.graph$.getValue().edges;
 
@@ -84,7 +91,10 @@ export class GraphViewEditComponent implements OnInit {
 
   nodeClick(node: any) {
     this.selectedNode.emit(node);
-    console.log(this.graphEditingService.getCluster("1"));
+  }
+
+  clusterClick(cluster: any) {
+    // this.selectedCluster.emit(cluster);
   }
 
   //id è il numero del nodo se il mouse è sopra, 0 se il mouse esce dal nodo
@@ -96,17 +106,47 @@ export class GraphViewEditComponent implements OnInit {
     this.showEdgeDetails = id;
   }
 
-  //triggered after adding/editing edge
+  moreClusterDetails(id: number) {
+    this.showClusterDetails = id;
+  }
+
+  checkClusterConditions(cluster: ClusterNode, task_node: Node): boolean {
+    let inner_nodes: any[] = [];  //nodi dentro il cluster
+
+    //prendo i nodi interni al cluster
+    if (cluster.childNodeIds) {
+      inner_nodes = cluster.childNodeIds.filter(id => id.split("_")[0] == "c").map(id => this.graphEditingService.getNode(id));
+    }
+
+    console.log(inner_nodes);
+
+    let flag = false;
+    inner_nodes.forEach((node: Node) => {
+      if (this.checkAllProps(node, task_node)) {
+        flag = true;
+        return;
+      }
+    })
+
+    return flag;
+  }
+
   checkConditions(edge: Edge): number { //ritorna: 0 arco grigio, 1 arco rosso, 2 arco verde
     //salvo nodo sorgente
-    const source_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.source);
-    const target_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.target);
+    const source_node: Node | undefined = this.nodes.find(nodo => nodo.id == edge.source);
+    //salvo nodo destinazione
+    const target_node: Node | undefined = this.nodes.find(nodo => nodo.id == edge.target);
 
-    if (source_node && target_node && source_node.type == "cond") {
-      if (this.checkAllProps(source_node, target_node)) {
-        return 2;
-      } else return 1;
-    } else return 0;
+    if (target_node && target_node.type == "task") {
+      if (source_node && source_node.type == "clus") {
+        let clus = this.clusters.find(clus => clus.id == "clus_" + source_node.id.split("_")[1]);
+        if (clus && this.checkClusterConditions((clus), target_node)) {
+          return 2;
+        } else return 1;
+      }
+    }
+
+    return 0;
   }
 
   //true se tutte le condizioni del PRIMO nodo parametro sono presenti e stesso valore nel SECONDO nodo parametro
@@ -117,10 +157,17 @@ export class GraphViewEditComponent implements OnInit {
     let flag: boolean = true;
 
     cond_1.forEach((element: any) => {
-      const x = cond_2.find((x: any) => x.name == element.name && x.value == element.value);
-      if (!x) {
-        flag = false;
-        return;
+      if (element.value == "") {
+        if (!cond_2.find((x: any) => x.name == element.name)) {
+          flag = false;
+          return
+        }
+      } else {
+        const x = cond_2.find((x: any) => x.name == element.name && x.value == element.value);
+        if (!x) {
+          flag = false;
+          return;
+        }
       }
     });
 

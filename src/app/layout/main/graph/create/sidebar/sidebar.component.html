@@ -45,7 +45,6 @@
             <p class="text-danger text-start my-0" *ngIf="nodeForm.controls['node_id'].errors?.['already']">{{nodeForm.controls['node_id'].errors?.['msg']}}</p>
             <input class="form-control my-2 " type="text" formControlName="node_label" placeholder="node label">
 
-
             <div class="accordion text-dark">
               <div class="accordion-item">
                 <div class="accordion-header px-3 btn col-12 d-flex align-items-center" (click)="collapse.toggle()" [attr.aria-expanded]="!isCollapsed">
@@ -244,7 +243,6 @@
           </div>
           </form>
         </div>
-
 
       </div>
 

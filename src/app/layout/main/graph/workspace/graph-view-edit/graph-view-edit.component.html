@@ -1,5 +1,5 @@
-<ngx-graph class="chart-container" [update$]="update$" [center$]="center$" [zoomToFit$]="zoomToFit$" [view]="[900, 500]"
-  [nodes]="nodes" [links]="edges" [clusters]="clusters" layout="dagreCluster">
+<ngx-graph class="chart-container" [update$]="update$" [center$]="center$" [zoomToFit$]="zoomToFit$" [view]="[950, 550]"
+  [nodes]="nodes" [links]="edges" [clusters]="clusters" [layout]="layout">
 
   <ng-template #nodeTemplate let-node>
     <svg xmlns="http://www.w3.org/2000/svg" (click)="nodeClick(node)" (mouseenter)="moreNodeDetails(node.id)"
@@ -11,16 +11,16 @@
             <rect x="0" [attr.y]="(i==0)? 40: 30+((i+1)*30)" width="100" [attr.height]="(i==0)? 70:50" rx="10"
               fill="#a22">
             </rect>
-            <text x="10" [attr.y]="40+((i+1)*35)" font-size="15" fill="#fff">{{prop.name}}: {{prop.value}}</text>
+            <text x="10" [attr.y]="40+((i+1)*35)" font-size="16" fill="#fff">{{prop.name}}: {{prop.value}}</text>
           </g>
         </g>
 
         <!-- tasks -> red -->
         <rect x="0" y="10" width="100" height="50" rx="10" fill="#a22"></rect>
         <rect x="0" y="0" width="100" height="30" rx="10" fill="#811"></rect>
-        <text x="20" y="20" font-size="15" fill="#fff">{{node.id}}</text>
-        <!-- <text x="10" y="50" font-size="15" fill="#fff">{{node.label}}</text> -->
-        <text x="10" y="50" font-size="15" fill="#fff">props: {{(Object.entries(node.properties)).length}}</text>
+        <text x="20" y="20" font-size="16" fill="#fff">{{node.id}}</text>
+        <!-- <text x="10" y="50" font-size="16" fill="#fff">{{node.label}}</text> -->
+        <text x="10" y="50" font-size="16" fill="#fff">props: {{(Object.entries(node.properties)).length}}</text>
       </g>
 
       <g *ngIf="node.type=='cond'">
@@ -34,9 +34,16 @@
             <rect x="0" [attr.y]="(i==0)? 60: 50+((i+1)*30)" width="100" [attr.height]="(i==0)? 70:50" rx="10"
               fill="#118">
             </rect>
-            <text x="10" [attr.y]="60+((i+1)*35)" font-size="15" fill="#fff">{{prop.name}}: {{prop.value}}</text>
+            <text x="10" [attr.y]="60+((i+1)*35)" font-size="16" fill="#fff">{{prop.name}}: {{prop.value}}</text>
           </g>
+          <text x="60" y="30" font-size="16" fill="#000">ID: {{node.id}}</text>
         </g>
+      </g>
+
+      <g *ngIf="node.type=='clus'">
+        <!-- nodi di confine cluster -> grigi -->
+        <circle cx="22" cy="17" [attr.width]="1000" r="17" fill="#ccc" />
+        <text x="11" y="23" font-size="14" fill="#000"> {{(node.id.split('_')[0]=='cin')? 'IN':'OUT'}} </text>
       </g>
 
     </svg>
@@ -66,11 +73,18 @@
   </ng-template>
 
   <ng-template #clusterTemplate let-cluster>
-    <svg:g class="node cluster">
+    <svg:g class="node cluster" (click)="clusterClick(cluster)" (mouseenter)="moreClusterDetails(cluster.id)"
+      (mouseleave)="moreClusterDetails(0)">
       <svg:rect x="10" y="130" rx="5" ry="5" [attr.width]="cluster.dimension.width"
-        [attr.height]="cluster.dimension.height-180" [attr.fill]="'#0000'" stroke="#000" stroke-width="5" />
+        [attr.height]="cluster.dimension.height-180" stroke="#000" stroke-width="5" fill="#0005" />
+      <text x="20" y="150" font-size="16" fill="#000">OR</text>
+      <g *ngIf="showClusterDetails == cluster.id">
+        <text x="110" y="130" font-size="16" fill="#000">ID: {{cluster.id}}</text>
+      </g>
     </svg:g>
   </ng-template>
+  <!-- height (..)-180 -->
+
 </ngx-graph>
 
 <!-- <foreignObject>

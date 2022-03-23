@@ -1,6 +1,6 @@
 import { GraphEditingService } from './../graph-editing.service';
-import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-workspace',
