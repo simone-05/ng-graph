@@ -190,7 +190,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.graphEditingService.addEdge(in_edge);
       this.graphEditingService.addEdge(out_edge);
       this.graphEditingService.deleteEdge("_"+cond_source+"-"+cond_target);
-      let cluster: ClusterNode = { id: "clus_"+cond_source+"-"+cond_target, childNodeIds: [in_node.id, out_node.id]};
+      let cluster: ClusterNode = { id: "clus_"+cond_source+"-"+cond_target, label: "", childNodeIds: [in_node.id, out_node.id]};
       this.graphEditingService.addCluster(cluster);
     }
 
@@ -621,10 +621,6 @@ export class SidebarComponent implements OnInit, OnChanges {
           target = control.value.cond_target;
           if (source == target) {
             return { loop: true, msg: "Source and target must be different" };
-          } else {
-            if (!this.graph.edges.find(edge => edge.source == source && edge.target == target) && !this.graph.clusters.find(clus => clus.id == "clus_"+source+"-"+target)){
-              return { edgeNotFound: true, msg: "Dosn't exist an edge between these nodes" };
-            }
           }
         }
       }

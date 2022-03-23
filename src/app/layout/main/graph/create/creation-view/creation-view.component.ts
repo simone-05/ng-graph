@@ -2,7 +2,7 @@ import { GraphEditingService, Node, Edge } from '../../graph-editing.service';
 import { Component, OnInit, SimpleChanges, OnChanges, Input, EventEmitter, Output } from '@angular/core';
 import { Subject } from 'rxjs';
 import * as _ from 'lodash';
-import { ClusterNode } from '@swimlane/ngx-graph';
+import { ClusterNode, DagreClusterLayout } from '@swimlane/ngx-graph';
 
 @Component({
   selector: 'app-creation-view',
@@ -22,6 +22,7 @@ export class CreationViewComponent implements OnInit {
   clusters: ClusterNode[] = [
     // {id: "1", label: "ci", childNodeIds: ["1", "2"]},
   ];
+  layout: any;
 
   @Input() update: number = 0;
   update$: Subject<boolean> = new Subject();
@@ -41,6 +42,7 @@ export class CreationViewComponent implements OnInit {
     this.showNodeDetails = 0;
     this.showEdgeDetails = 0;
     this.showClusterDetails = 0;
+    this.layout = new DagreClusterLayout();
 
     this.graphEditingService.graph$.subscribe((element) => {
       if (element) {
@@ -74,6 +76,9 @@ export class CreationViewComponent implements OnInit {
   }
 
   updateGraph() {
+    // this.clusters = [...this.graphEditingService.graph.clusters];
+    // this.nodes = [...this.graphEditingService.graph.nodes];
+    // this.edges = [...this.graphEditingService.graph.edges];
     this.nodes = this.graphEditingService.graph.nodes;
     this.edges = this.graphEditingService.graph.edges;
     this.clusters = this.graphEditingService.graph.clusters;
