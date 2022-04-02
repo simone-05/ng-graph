@@ -36,7 +36,7 @@
             </rect>
             <text x="10" [attr.y]="60+((i+1)*35)" font-size="16" fill="#fff">{{prop.name}}: {{prop.value}}</text>
           </g>
-          <text x="60" y="30" font-size="16" fill="#000">ID: {{node.id}}</text>
+          <!-- <text x="60" y="30" font-size="16" fill="#000">ID: {{node.id}}</text> -->
         </g>
       </g>
 
@@ -75,11 +75,10 @@
   <ng-template #clusterTemplate let-cluster>
     <svg:g class="node cluster" (click)="clusterClick(cluster)" (mouseenter)="moreClusterDetails(cluster.id)"
       (mouseleave)="moreClusterDetails(0)">
-      <svg:rect x="10" y="130" rx="5" ry="5" [attr.width]="cluster.dimension.width"
-        [attr.height]="cluster.dimension.height-180" stroke="#000" stroke-width="5" fill="#0005" />
+      <svg:rect x="10" y="130" rx="5" ry="5" [attr.width]="cluster.dimension.width" [attr.height]="cluster.dimension.height-180" stroke="#000" stroke-width="5" fill="#0005" />
       <text x="20" y="150" font-size="16" fill="#000">OR</text>
       <g *ngIf="showClusterDetails == cluster.id">
-        <text x="110" y="130" font-size="16" fill="#000">ID: {{cluster.id}}</text>
+        <!-- <text x="110" y="130" font-size="16" fill="#000">ID: {{cluster.id}}</text> -->
       </g>
     </svg:g>
   </ng-template>

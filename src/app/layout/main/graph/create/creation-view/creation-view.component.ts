@@ -123,7 +123,7 @@ export class CreationViewComponent implements OnInit {
       inner_nodes = cluster.childNodeIds.filter(id => id.split("_")[0]=="c").map(id => this.graphEditingService.getNode(id));
     }
 
-    console.log(inner_nodes);
+    // console.log(inner_nodes);
 
     let flag = false;
     inner_nodes.forEach((node: Node) =>{

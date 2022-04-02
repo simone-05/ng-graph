@@ -55,7 +55,12 @@ export class SidebarComponent implements OnInit, OnChanges {
       node_label: null,
       node_type: null,
       // node_cluster: [null, this.checkClusterExists()],
-      node_data: this.formBuilder.array([]),
+      node_data: this.formBuilder.array([
+        // this.formBuilder.group({
+        //   name: [null, Validators.required],
+        //   value: [null, Validators.required],
+        // }),
+      ]),
     });
     // this.nodeForm.valueChanges.subscribe(()=>console.log(this.nodeForm.value));
 
@@ -70,14 +75,14 @@ export class SidebarComponent implements OnInit, OnChanges {
       cond_target: [null, [Validators.required, this.checkCondNodeTask()]],
       cond_label: null,
       cond_cluster: null,
-      cond_data: this.formBuilder.array([]),
-    }, {validators: this.checkCondId()});
+      cond_data: this.formBuilder.array([], this.checkCondPresent()),
+    }, {validators: this.checkCondForm()});
 
     this.edgeForm = this.formBuilder.group({
       edge_id: null,
       edge_label: null,
       edge_source: [null, [Validators.required, this.checkEdgeNode()]],
-      edge_target: [null, [Validators.required, this.checkEdgeNode(), this.checkCondNode()]],
+      edge_target: [null, [Validators.required, this.checkEdgeNode()]],
       // edge_data: this.formBuilder.array([]),
       edge_weight: [1, this.checkEdgeWeight()],
     }, {validators: this.checkEdgeId()});
@@ -170,7 +175,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   tryCond() {
-    let cond_source = this.condForm.controls["cond_source"].value;
+    let cond_source = this.condForm.controls["cond_source"].value||"";
     let cond_target = this.condForm.controls["cond_target"].value;
     let cond_label = this.condForm.controls["cond_label"].value||"";
     let cond_data = this.condForm.controls["cond_data"].value;
@@ -181,12 +186,14 @@ export class SidebarComponent implements OnInit, OnChanges {
     if (!cluster_already) {
       let cluster: ClusterNode = { id: "clus_"+cond_source+"-"+cond_target, label: "", childNodeIds: []};
       this.graphEditingService.addCluster(cluster);
-      if (cond_source) {
+      if (cond_source != "") {
         let in_node: Node = {id: "cin_"+cond_source+"-"+cond_target, label: "", type: "clus", properties: {}};
         this.graphEditingService.addNode(in_node);
         let in_edge: Edge = {id: "_"+cond_source+"-"+in_node.id, source: cond_source, target: in_node.id, label: "", weight: 1};
         this.graphEditingService.addEdge(in_edge);
         this.graphEditingService.addToCluster(cluster.id, in_node);
+        //rimuovo l'arco tra i due nodi task precedentemente creato
+        this.graphEditingService.deleteEdge("_" + cond_source + "-" + cond_target);
       }
       let out_node: Node = {id: "cout_"+cond_source+"-"+cond_target, label: "", type: "clus", properties: {}};
       this.graphEditingService.addNode(out_node);
@@ -199,13 +206,23 @@ export class SidebarComponent implements OnInit, OnChanges {
     // Imposto l'id del nodo condizione, la cui ultima parte e un numero variabile:
     // Cerco tra i nodi condizione, quelli che stanno tra gli stessi nodi task, e ne estraggo l'utlima parte, il numero che mi serve (se non c'erano gia nodi condizione presenti allora lo imposto a zero)
     if (!this.nodeEditing) {
-      let last_number: number = Number(this.graph.nodes.filter(node => node.id.split("_")[0] == "c" && node.id.split("_")[1] == cond_source + "-" + cond_target).pop()?.id.split("_")[2]||"0");
+      let last_number: number = Number(this.graph.nodes.filter(node => node.id.split("_")[0] == "c" && node.id.split("_")[1] == cond_source + "-" + cond_target).pop()?.id.split("_")[2] || "0");
       // lo incremento
       last_number += 1;
       // costruisco l'id del nuovo nodo condizione
-      this.condForm.controls["cond_id"].setValue("c_"+cond_source+"-"+cond_target+"_"+String(last_number));
+      this.condForm.controls["cond_id"].setValue("c_" + cond_source + "-" + cond_target + "_" + String(last_number));
     }
     let cond_id = this.condForm.controls["cond_id"].value;
+
+    if (cond_source != "") {
+      let in_node_id = this.graphEditingService.getCluster(cond_cluster)?.childNodeIds?.find(id=> id.split("_")[0] == "cin")||"";
+      let edge_in_to_cond: Edge = { id: "_" + in_node_id+ "-" + cond_id, label: "", weight: 1, source: in_node_id, target: cond_id};
+      this.graphEditingService.addEdge(edge_in_to_cond);
+    }
+    let out_node_id = this.graphEditingService.getCluster(cond_cluster)?.childNodeIds?.find(id => id.split("_")[0] == "cout") || "";
+    let edge_cond_to_out: Edge = { id: "_" +cond_id + "-" +out_node_id, label: "", weight: 1, source: cond_id, target: out_node_id};
+    this.graphEditingService.addEdge(edge_cond_to_out);
+
 
     let node: Node = {id: cond_id, label: cond_label, type: "cond", properties: cond_data};
     if (this.nodeEditing) {
@@ -291,7 +308,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.nodeEditing = false;
     this.nodePropId = 0;
     this.condForm.reset();
-    this.condForm.controls["cond_data"] = this.formBuilder.array([]);
+    this.condForm.controls["cond_data"] = this.formBuilder.array([], this.checkCondPresent());
   }
 
   clearEdgeInput() {
@@ -307,6 +324,10 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.clusterForm.reset();
     this.clusterForm.controls["cluster_nodes"] = this.formBuilder.array([]);
     // this.nodeDataForm.updateValueAndValidity();
+  }
+
+  clearPropsInput() {
+    this.nodePropForm.reset();
   }
 
   selectedNodeInputChange(node: any) {
@@ -400,6 +421,13 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   changedView(insertChoice: string) {
     this.view = insertChoice;
+    switch (this.view) {
+      case "node_task": this.clearNodeInput(); break;
+      case "node_cond": this.clearCondInput(); break;
+      case "edge": this.clearEdgeInput(); break;
+      default: break;
+    }
+    this.clearPropsInput();
   }
 
   reload_page() {
@@ -408,6 +436,7 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   centerGraph() {
     this.updateGraphView.emit(2);
+    console.log(this.nodeForm);
   }
 
   fitGraph() {
@@ -418,19 +447,19 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.nodePropId += 1;
     const dato = this.formBuilder.group({
       id: String(this.nodePropId),
-      name: this.nodePropForm.controls["node_prop_name"].value,
-      value: this.nodePropForm.controls["node_prop_value"].value||"",
+      name: [null, [Validators.required, this.checkNodeProperty()]],
+      value: [null, Validators.required],
     });
     this.nodeDataForm.push(dato);
-    this.nodePropForm.reset();
+    // this.nodePropForm.reset();
   }
 
   addCondDataField() {
     this.nodePropId += 1;
     const dato = this.formBuilder.group({
       id: String(this.nodePropId),
-      name: this.nodePropForm.controls["node_prop_name"].value,
-      value: this.nodePropForm.controls["node_prop_value"].value||"",
+      name: [null, [Validators.required, this.checkNodeProperty()]],
+      value: null,
     });
     this.condDataForm.push(dato);
     this.nodePropForm.reset();
@@ -552,7 +581,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
   }
 
-    //controlla non ci siano gia archi entranti nel nodo condizione
+  //controlla non ci siano gia archi entranti nel nodo condizione
   checkCondNode(): ValidatorFn {
     return (control) => {
       if (this.graph.nodes.find(nodo => nodo.id == control.value && nodo.type == "cond") || this.graph.nodes.find(clus => clus.id == control.value)) {
@@ -612,7 +641,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     }
   }
 
-  checkCondId(): ValidatorFn {
+  checkCondForm(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       if (control.value) {
         let source = control.value.cond_source;
@@ -625,6 +654,32 @@ export class SidebarComponent implements OnInit, OnChanges {
           }
         }
       }
+      return null;
+    }
+  }
+
+  checkCondPresent(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors|null => {
+      if (control.value) {
+        if (control.value.length == 0) {
+          return { noConds: true, msg: "Must specify at least one condition" };
+        }
+      }
+      return null;
+    }
+  }
+
+  checkNodeConds(): ValidatorFn {
+    return (control) => {
+      // if (control.value && control.value.length > 0) {
+      //   let last_entry = control.value.length - 1;
+      //   if (control.value[last_entry].name == "") {
+      //     return { noName: true};
+      //   }
+      //   if (control.value[last_entry].value == "") {
+      //     return {noValue: true};
+      //   }
+      // }
       return null;
     }
   }

@@ -183,6 +183,10 @@ export class GraphEditingService {
     const conds: any[] = Object.entries(node.properties).map(x => x[1]);
     return conds;
   }
+
+  getTaskNodes(): any[] {
+    return this.graph.nodes.filter(node => node.type == "task")||[];
+  }
 }
 
 export interface Edge {

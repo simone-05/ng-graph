@@ -58,23 +58,30 @@
                   <div formArrayName="node_data">
                     <div class="row pb-2 px-4 align-items-center" *ngFor="let item of nodeDataForm.controls; let i=index" [formGroupName]="i">
                       <div class="col-5 p-0 ps-2 pe-1" style="overflow-x: auto">
-                        {{item.value.name}}
+                        <!-- {{item.value.name}} -->
+                        <input type="text" class="form-control" formControlName="name" placeholder="name" [ngClass]="{'is-invalid': !nodeForm.get('node_data.'+i+'.name')?.valid}">
                       </div>
                       <div class="col-5 p-0 px-1 ps-2" style="overflow-x: auto">
-                        <input type="text" class="form-control" formControlName="value" placeholder="value">
+                        <input type="text" class="form-control" formControlName="value" placeholder="value" [ngClass]="{'is-invalid': !nodeForm.get('node_data.'+i+'.value')?.valid}">
                       </div>
                       <div class="col-2 p-1 pt-1 btn btn-danger" *ngIf="item" (click)="removeNodeDataField(i)">
                           <img src="../../../../../../assets/images/x-white.svg" alt="delete node property" width="24">
                       </div>
+                      <small class="text-danger text-start my-0" *ngIf="!nodeForm.get('node_data.'+i+'.name')?.valid">{{nodeForm.get('node_data.'+i+'.name')?.errors?.['msg']}}</small>
                       <!-- <div class="col-2 p-1 pt-1 btn btn-warning" *ngIf="item.name" (click)="editNodeDataField(item.name)">
                         <img src="../../../../../../assets/images/plus-white.svg" width="24" alt="add node property">
                       </div> -->
                     </div>
                   </div>
                   <div *ngIf="nodeForm.controls['node_data'].value.length == 0" class="row px-4 pb-2 text-center">
-                      <p class="m-0" style="color: #666">no properties</p>
+                    <p class="m-0" style="color: #666">no properties</p>
                   </div>
-                  <div class="row px-4 pb-2" [formGroup]="nodePropForm" novalidate>
+                  <!-- form per aggiunta proprieta -->
+                  <div class="col-12 ps-3 pb-3 btn d-flex align-items-center" (click)="this.addNodeDataField()">
+                    <img src="../../../../../../assets/images/plus-dark.svg" alt="add data field">
+                    <p class="m-0 ms-1" style="color: #666">Add data field</p>
+                  </div>
+                  <!-- <div class="row px-4 pb-2" [formGroup]="nodePropForm" novalidate *ngIf="this.x">
                     <div class="col-5 p-0 ps-1 pe-1">
                       <input type="text" class="form-control" formControlName="node_prop_name" placeholder="name" [ngClass]="{'is-invalid': nodePropForm.controls['node_prop_name'].errors?.['msg']}">
                     </div>
@@ -85,17 +92,13 @@
                       <img src="../../../../../../assets/images/plus-white.svg" width="24" alt="add node property">
                     </div>
                     <small class="text-danger text-start my-0" *ngIf="!nodePropForm.valid">{{nodePropForm.controls['node_prop_name'].errors?.['msg']}}</small>
-                  </div>
-                  <!-- <div class="col-12 ps-3 pb-3 btn d-flex align-items-center" (click)="addNodeDataField()">
-                    <img src="../../../../../../assets/images/plus-dark.svg" alt="add data field">
-                    <p class="m-0 ms-1" style="color: #666">Add data field</p>
                   </div> -->
                 </div>
               </div>
             </div>
 
             <div class="d-flex">
-              <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !nodeForm.valid, 'btn-warning': nodeEditing}" type="submit" (click)="tryNode()" [innerText]="nodeEditing? 'Edit':'Add'">Add</button>
+              <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !nodeForm.valid || !nodeForm.get('node_data')?.valid, 'btn-warning': nodeEditing}" type="submit" (click)="tryNode()" [innerText]="nodeEditing? 'Edit':'Add'">Add</button>
               <button class="ms-3 mt-2 btn btn-danger" *ngIf="nodeEditing" (click)="deleteNode()">Delete</button>
               <button class="ms-auto mt-2 btn btn-secondary" (click)="clearNodeInput()">Clear</button>
             </div>
@@ -104,11 +107,24 @@
 
         <div *ngIf="view == 'node_cond'">
           <form class="d-flex-column" [formGroup]="condForm" novalidate>
-            <input class="form-control my-2" type="text" formControlName="cond_source" placeholder="node source"
-              [ngClass]="{'is-invalid': !condForm.controls['cond_source'].valid}" [readonly]="nodeEditing">
+            <select class="form-select my-bg-grey my-2" formControlName="cond_source" [ngClass]="{'is-invalid': !condForm.controls['cond_source'].valid}" [disabled]="nodeEditing">
+              <!-- <optgroup>
+                <option class="my-0" *ngIf="item.type=='task'" [value]="item.id">{{item.id}}</option>
+              </optgroup> -->
+              <option [value]="">null</option>
+              <!-- <option value="">null</option> -->
+              <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
+                <p *ngIf="item.type=='task'">{{item.id}}</p>
+              </option>
+            </select>
+            <!-- <input class="form-control my-2" type="text" formControlName="cond_source" placeholder="node source" [ngClass]="{'is-invalid': !condForm.controls['cond_source'].valid}" [readonly]="nodeEditing"> -->
             <p *ngIf="condForm.controls['cond_source'].errors?.['notFound']" class="text-danger text-start mt-1">source node doesn't exist</p>
-            <input class="form-control my-2" type="text" formControlName="cond_target" placeholder="node target"
-              [ngClass]="{'is-invalid': !condForm.controls['cond_target'].valid}" [readonly]="nodeEditing">
+            <!-- <input class="form-control my-2" type="text" formControlName="cond_target" placeholder="node target" [ngClass]="{'is-invalid': !condForm.controls['cond_target'].valid}" [readonly]="nodeEditing"> -->
+            <select class="form-select my-bg-grey my-2" formControlName="cond_target" [ngClass]="{'is-invalid': !condForm.controls['cond_target'].valid}" [disabled]="nodeEditing">
+              <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
+                <p *ngIf="item.type=='task'">{{item.id}}</p>
+              </option>
+            </select>
             <p *ngIf="condForm.controls['cond_target'].errors?.['notFound']" class="text-danger text-start mt-1">target node doesn't exist</p>
             <p *ngIf="condForm.errors?.['loop']" class="text-danger text-start mt-1">{{condForm.errors?.['msg']}}</p>
             <p *ngIf="condForm.errors?.['edgeNotFound']" class="text-danger text-start mt-1">{{condForm.errors?.['msg']}}</p>
@@ -127,23 +143,28 @@
                 </div>
                 <div #collapse="ngbCollapse" [(ngbCollapse)]="isCollapsed">
                   <div formArrayName="cond_data">
-                    <div class="row pb-2 px-4 align-items-center" *ngFor="let item of condDataForm.controls; let i=index"
-                      [formGroupName]="i">
+                    <div class="row pb-2 px-4 align-items-center" *ngFor="let item of condDataForm.controls; let i=index" [formGroupName]="i">
                       <div class="col-5 p-0 ps-2 pe-1" style="overflow-x: auto">
-                        {{item.value.name}}
+                        <!-- {{item.value.name}} -->
+                        <input type="text" class="form-control" formControlName="name" placeholder="name" [ngClass]="{'is-invalid': !condForm.get('cond_data.'+i+'.name')?.valid}">
                       </div>
                       <div class="col-5 p-0 px-1 ps-2" style="overflow-x: auto">
-                        <input type="text" class="form-control" formControlName="value" placeholder="value">
+                        <input type="text" class="form-control" formControlName="value" placeholder="value" [ngClass]="{'is-invalid': !condForm.get('cond_data.'+i+'.value')?.valid}">
                       </div>
                       <div class="col-2 p-1 pt-1 btn btn-danger" *ngIf="item" (click)="removeCondDataField(i)">
                         <img src="../../../../../../assets/images/x-white.svg" alt="delete node property" width="24">
                       </div>
+                      <small class="text-danger text-start my-0" *ngIf="!condForm.get('cond_data.'+i+'.name')?.valid">{{condForm.get('cond_data.'+i+'.name')?.errors?.['msg']}}</small>
                     </div>
                   </div>
                   <div *ngIf="condForm.controls['cond_data'].value.length == 0" class="row px-4 pb-2 text-center">
                     <p class="m-0" style="color: #666">no properties</p>
                   </div>
-                  <div class="row px-4 pb-2" [formGroup]="nodePropForm" novalidate>
+                  <div class="col-12 ps-3 pb-3 btn d-flex align-items-center" (click)="this.addCondDataField()">
+                    <img src="../../../../../../assets/images/plus-dark.svg" alt="add data field">
+                    <p class="m-0 ms-1" style="color: #666">Add data field</p>
+                  </div>
+                  <!-- <div class="row px-4 pb-2" [formGroup]="nodePropForm" novalidate>
                     <div class="col-5 p-0 ps-1 pe-1">
                       <input type="text" class="form-control" formControlName="node_prop_name" placeholder="name"
                         [ngClass]="{'is-invalid': nodePropForm.controls['node_prop_name'].errors?.['msg']}">
@@ -158,13 +179,14 @@
                     </div>
                     <small class="text-danger text-start my-0"
                       *ngIf="!nodePropForm.valid">{{nodePropForm.controls['node_prop_name'].errors?.['msg']}}</small>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>
+            <small class="text-danger text-start" *ngIf="!condForm.controls['cond_data'].valid">{{condForm.controls['cond_data'].errors?.['msg']}}</small>
 
             <div class="d-flex">
-              <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !condForm.valid, 'btn-warning': nodeEditing}"
+              <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !condForm.controls['cond_data'].valid || !condForm.controls['cond_target'].valid, 'btn-warning': nodeEditing}"
                 type="submit" (click)="tryCond()" [innerText]="nodeEditing? 'Edit':'Add'">Add</button>
               <button class="ms-3 mt-2 btn btn-danger" *ngIf="nodeEditing" (click)="deleteCond()">Delete</button>
               <button class="ms-auto mt-2 btn btn-secondary" (click)="clearCondInput()">Clear</button>
@@ -174,9 +196,21 @@
 
         <div *ngIf="view == 'edge'">
           <form [formGroup]="edgeForm" novalidate class="d-flex-column">
-            <input class="form-control my-2" type="text" formControlName="edge_source" placeholder="edge source" [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}" [readonly]="edgeEditing">
+            <!-- <input class="form-control my-2" type="text" formControlName="edge_source" placeholder="edge source" [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}" [readonly]="edgeEditing"> -->
+            <select class="form-select my-bg-grey my-2" formControlName="edge_source"
+              [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}" [disabled]="edgeEditing">
+              <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
+                <p *ngIf="item.type=='task'">{{item.id}}</p>
+              </option>
+            </select>
             <p *ngIf="edgeForm.controls['edge_source'].errors?.['notFound']" class="text-danger text-start mt-1">source node doesn't exist</p>
-            <input class="form-control my-2" type="text" formControlName="edge_target" placeholder="edge target" [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [readonly]="edgeEditing">
+            <!-- <input class="form-control my-2" type="text" formControlName="edge_target" placeholder="edge target" [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [readonly]="edgeEditing"> -->
+            <select class="form-select my-bg-grey my-2" formControlName="edge_target"
+              [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [disabled]="edgeEditing">
+              <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
+                <p *ngIf="item.type=='task'">{{item.id}}</p>
+              </option>
+            </select>
             <p *ngIf="edgeForm.controls['edge_target'].errors?.['notFound']" class="text-danger text-start mt-1">target node doesn't exist</p>
             <p *ngIf="edgeForm.controls['edge_target'].errors?.['already2cond'] && !edgeForm.errors?.['cond2cond']" class="text-danger text-start mt-1">{{edgeForm.controls['edge_target'].errors?.['msg']}}</p>
             <p *ngIf="edgeForm.errors?.['already']" class="text-danger text-start mt-1">{{edgeForm.errors?.['msg']}}</p>
