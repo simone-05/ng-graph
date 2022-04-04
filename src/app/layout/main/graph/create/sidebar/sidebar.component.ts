@@ -283,9 +283,11 @@ export class SidebarComponent implements OnInit, OnChanges {
     let tasks = cond_id.split("_")[1];
     let cluster_id = "clus_"+tasks;
     if (!this.graph.clusters.find(clus => clus.id == cluster_id)?.childNodeIds?.find(id => id.split("_")[0] == "c")) {
+      //se ultimo nodo condizione del grafo
       this.graphEditingService.deleteCluster(cluster_id);
       this.graphEditingService.deleteNode("cin_"+tasks);
       this.graphEditingService.deleteNode("cout_"+tasks);
+      this.graphEditingService.addEdge({id: "_"+tasks, label: "", source: tasks.split("-")[0], target: tasks.split("-")[1], weight: 1});
     }
     this.clearCondInput();
   }
