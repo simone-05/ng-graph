@@ -1,4 +1,4 @@
-<div class="row mx-3" style="height: 89.7vh;">
+<div class="row mx-3" style="min-height: 90vh; padding-bottom: 10vh">
   <div class="col-12">
 
     <div class="d-flex align-items-center">
@@ -111,7 +111,7 @@
               <!-- <optgroup>
                         <option class="my-0" *ngIf="item.type=='task'" [value]="item.id">{{item.id}}</option>
                       </optgroup> -->
-              <option [value]="">null</option>
+              <option ngValue="" selected>No input node</option>
               <!-- <option value="">null</option> -->
               <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
                 <p *ngIf="item.type=='task'">{{item.id}}</p>

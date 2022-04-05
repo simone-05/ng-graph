@@ -349,8 +349,8 @@ export class SidebarComponent implements OnInit, OnChanges {
       node.properties.forEach((element: any) => {
         const dato = this.formBuilder.group({
           id: element.id,
-          name: element.name,
-          value: element.value,
+          name: [element.name, [Validators.required, this.checkNodeProperty()]],
+          value: [element.value, Validators.required],
         });
         this.nodeDataForm.push(dato);
       });
@@ -363,7 +363,7 @@ export class SidebarComponent implements OnInit, OnChanges {
       node.properties.forEach((element: any) => {
         const dato = this.formBuilder.group({
           id: element.id,
-          name: element.name,
+          name: [element.name, [Validators.required, this.checkNodeProperty()]],
           value: element.value,
         });
         this.condDataForm.push(dato);
@@ -435,12 +435,11 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   centerGraph() {
     this.updateGraphView.emit(2);
-    console.log(this.nodeForm.controls["node_data"]);
+    // console.log(this.nodeForm.controls["node_data"]);
   }
 
   fitGraph() {
     this.updateGraphView.emit(3);
-    console.log(this.nodeForm);
   }
 
   addNodeDataField() {
@@ -509,14 +508,14 @@ export class SidebarComponent implements OnInit, OnChanges {
     return (control: AbstractControl): ValidationErrors | null => {
       if (control.value) {
         if (this.view == "node_task") {
-          if (this.nodeForm.controls["node_data"].value.find((props: any) => props.name == control.value)) {
+          if (this.nodeForm.controls["node_data"].value.find((props: any) => props.name == control.value) && control.dirty) {
             return {already: true, msg: "Already existst a property with this name" };
           }
 
           // non posso aggiungere una condizione se non e presente nei nodi task destinatari
           // if (this.view == "node_cond" && this.graph.edges.find((edge: Edge) => edge.source == this.condForm.controls["cond_id"].value)) {
         } else if (this.view == "node_cond") {
-          if (this.condForm.controls["cond_data"].value.find((props: any) => props.name == control.value)) {
+          if (this.condForm.controls["cond_data"].value.find((props: any) => props.name == control.value) && control.dirty) {
             return { already: true, msg: "Already existst a property with this name" };
           }
 

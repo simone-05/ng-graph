@@ -280,9 +280,13 @@ export class SidebarEditComponent implements OnInit, OnChanges {
     let tasks = cond_id.split("_")[1];
     let cluster_id = "clus_" + tasks;
     if (!this.graph.clusters.find(clus => clus.id == cluster_id)?.childNodeIds?.find(id => id.split("_")[0] == "c")) {
+      //se ultimo nodo condizione del grafo
       this.graphEditingService.deleteCluster(cluster_id);
       this.graphEditingService.deleteNode("cin_" + tasks);
       this.graphEditingService.deleteNode("cout_" + tasks);
+      if (tasks.split("-")[0]) {
+        this.graphEditingService.addEdge({ id: "_" + tasks, label: "", source: tasks.split("-")[0], target: tasks.split("-")[1], weight: 1 });
+      }
     }
     this.clearCondInput();
   }
@@ -347,8 +351,8 @@ export class SidebarEditComponent implements OnInit, OnChanges {
       node.properties.forEach((element: any) => {
         const dato = this.formBuilder.group({
           id: element.id,
-          name: element.name,
-          value: element.value,
+          name: [element.name, [Validators.required, this.checkNodeProperty()]],
+          value: [element.value, Validators.required],
         });
         this.nodeDataForm.push(dato);
       });
@@ -361,7 +365,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
       node.properties.forEach((element: any) => {
         const dato = this.formBuilder.group({
           id: element.id,
-          name: element.name,
+          name: [element.name, [Validators.required, this.checkNodeProperty()]],
           value: element.value,
         });
         this.condDataForm.push(dato);
@@ -433,7 +437,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
 
   centerGraph() {
     this.updateGraphView.emit(2);
-    console.log(this.nodeForm);
+    // console.log(this.nodeForm);
   }
 
   fitGraph() {
@@ -506,14 +510,14 @@ export class SidebarEditComponent implements OnInit, OnChanges {
     return (control: AbstractControl): ValidationErrors | null => {
       if (control.value) {
         if (this.view == "node_task") {
-          if (this.nodeForm.controls["node_data"].value.find((props: any) => props.name == control.value)) {
+          if (this.nodeForm.controls["node_data"].value.find((props: any) => props.name == control.value) && control.dirty) {
             return { already: true, msg: "Already existst a property with this name" };
           }
 
           // non posso aggiungere una condizione se non e presente nei nodi task destinatari
           // if (this.view == "node_cond" && this.graph.edges.find((edge: Edge) => edge.source == this.condForm.controls["cond_id"].value)) {
         } else if (this.view == "node_cond") {
-          if (this.condForm.controls["cond_data"].value.find((props: any) => props.name == control.value)) {
+          if (this.condForm.controls["cond_data"].value.find((props: any) => props.name == control.value) && control.dirty) {
             return { already: true, msg: "Already existst a property with this name" };
           }
 
