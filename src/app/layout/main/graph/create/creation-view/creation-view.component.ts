@@ -131,7 +131,7 @@ export class CreationViewComponent implements OnInit {
         flag = true;
         return;
       }
-    })
+    });
 
     return flag;
   }
@@ -145,7 +145,7 @@ export class CreationViewComponent implements OnInit {
     if (target_node && target_node.type == "task") {
       if (source_node && source_node.type == "clus") {
         let clus = this.clusters.find(clus => clus.id == "clus_"+source_node.id.split("_")[1]);
-        if (clus && this.checkClusterConditions((clus), target_node)) {
+        if (clus && this.checkClusterConditions(clus, target_node)) {
           return 2;
         } else return 1;
       }
@@ -162,7 +162,7 @@ export class CreationViewComponent implements OnInit {
     let flag: boolean = true;
 
     cond_1.forEach((element: any) => {
-      if (element.value == "") {
+      if (element.value == "" || element.value == null) {
         if (!cond_2.find((x: any) => x.name == element.name)) {
           flag = false;
           return

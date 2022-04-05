@@ -55,14 +55,9 @@ export class SidebarComponent implements OnInit, OnChanges {
       node_label: null,
       node_type: null,
       // node_cluster: [null, this.checkClusterExists()],
-      node_data: this.formBuilder.array([
-        // this.formBuilder.group({
-        //   name: [null, Validators.required],
-        //   value: [null, Validators.required],
-        // }),
-      ]),
+      node_data: this.formBuilder.array([]),
     });
-    // this.nodeForm.valueChanges.subscribe(()=>console.log(this.nodeForm.value));
+    // this.nodeForm.valueChanges.subscribe(()=>console.log(this.nodeForm.controls["node_data"]));
 
     this.nodePropForm = this.formBuilder.group({
       node_prop_name: [null, [Validators.required, this.checkNodeProperty()]],
@@ -287,7 +282,9 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.graphEditingService.deleteCluster(cluster_id);
       this.graphEditingService.deleteNode("cin_"+tasks);
       this.graphEditingService.deleteNode("cout_"+tasks);
-      this.graphEditingService.addEdge({id: "_"+tasks, label: "", source: tasks.split("-")[0], target: tasks.split("-")[1], weight: 1});
+      if (tasks.split("-")[0]) {
+        this.graphEditingService.addEdge({id: "_"+tasks, label: "", source: tasks.split("-")[0], target: tasks.split("-")[1], weight: 1});
+      }
     }
     this.clearCondInput();
   }
@@ -438,11 +435,12 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   centerGraph() {
     this.updateGraphView.emit(2);
-    console.log(this.nodeForm);
+    console.log(this.nodeForm.controls["node_data"]);
   }
 
   fitGraph() {
     this.updateGraphView.emit(3);
+    console.log(this.nodeForm);
   }
 
   addNodeDataField() {
