@@ -73,6 +73,12 @@ export class CreationViewComponent implements OnInit {
     }
   }
 
+  getContentHeight() : string {
+    const header_height: number|undefined = document.getElementsByTagName("app-header")[0].firstElementChild?.clientHeight||67;
+    const viewport_height: number|undefined = window.innerHeight||290;
+    return (viewport_height - header_height).toString()+"px";
+  }
+
   updateGraph() {
     // this.clusters = [...this.graphEditingService.graph.clusters];
     // this.nodes = [...this.graphEditingService.graph.nodes];

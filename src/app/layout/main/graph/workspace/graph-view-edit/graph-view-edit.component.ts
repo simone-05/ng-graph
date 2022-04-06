@@ -1,5 +1,5 @@
 import { GraphEditingService, Node, Edge } from '../../graph-editing.service';
-import { Component, OnInit, SimpleChanges, OnChanges, Input, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, SimpleChanges, OnChanges, Input, EventEmitter, Output, AfterViewInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import * as _ from 'lodash';
 import { ClusterNode, DagreClusterLayout } from '@swimlane/ngx-graph';
@@ -68,6 +68,12 @@ export class GraphViewEditComponent implements OnInit {
       }
   }
 
+  getContentHeight(): string {
+    const header_height: number | undefined = document.getElementsByTagName("app-header")[0].firstElementChild?.clientHeight || 67;
+    const viewport_height: number | undefined = window.innerHeight || 290;
+    return (viewport_height - header_height).toString() + "px";
+  }
+
   updateGraph() {
     // this.clusters = [...this.graphEditingService.graph.clusters];
     // this.nodes = [...this.graphEditingService.graph.nodes];
@@ -118,7 +124,7 @@ export class GraphViewEditComponent implements OnInit {
       inner_nodes = cluster.childNodeIds.filter(id => id.split("_")[0] == "c").map(id => this.graphEditingService.getNode(id));
     }
 
-    console.log(inner_nodes);
+    // console.log(inner_nodes);
 
     let flag = false;
     inner_nodes.forEach((node: Node) => {
@@ -126,7 +132,7 @@ export class GraphViewEditComponent implements OnInit {
         flag = true;
         return;
       }
-    })
+    });
 
     return flag;
   }
@@ -140,7 +146,7 @@ export class GraphViewEditComponent implements OnInit {
     if (target_node && target_node.type == "task") {
       if (source_node && source_node.type == "clus") {
         let clus = this.clusters.find(clus => clus.id == "clus_" + source_node.id.split("_")[1]);
-        if (clus && this.checkClusterConditions((clus), target_node)) {
+        if (clus && this.checkClusterConditions(clus, target_node)) {
           return 2;
         } else return 1;
       }
@@ -157,7 +163,7 @@ export class GraphViewEditComponent implements OnInit {
     let flag: boolean = true;
 
     cond_1.forEach((element: any) => {
-      if (element.value == "") {
+      if (element.value == "" || element.value == null) {
         if (!cond_2.find((x: any) => x.name == element.name)) {
           flag = false;
           return
