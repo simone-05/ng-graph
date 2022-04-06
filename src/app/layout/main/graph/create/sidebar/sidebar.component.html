@@ -14,7 +14,7 @@
     <label for="graphDescriptionInput">Graph description</label>
   </div>
 
-  <button class="w-50 mt-5 btn btn-lg btn-primary" [ngClass]="{'disabled': !graphInitForm.controls['graph_name'].valid || graphNameAlready}" type="submit" (click)="tryCreate()">Next</button>
+  <button class="w-50 mt-5 btn btn-lg btn-primary" [ngClass]="{'disabled': !graphInitForm.controls['graph_name'].valid || graphNameAlready}" type="button" (click)="tryCreate()">Next</button>
 </form>
 
 <ng-template #creation>
@@ -98,7 +98,7 @@
             </div>
 
             <div class="d-flex">
-              <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !nodeForm.valid || !nodeForm.get('node_data')?.valid, 'btn-warning': nodeEditing}" type="submit" (click)="tryNode()" [innerText]="nodeEditing? 'Edit':'Add'">Add</button>
+              <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !nodeForm.valid || !nodeForm.get('node_data')?.valid, 'btn-warning': nodeEditing}" type="button" (click)="tryNode()" [innerText]="nodeEditing? 'Edit':'Add'">Add</button>
               <button class="ms-3 mt-2 btn btn-danger" *ngIf="nodeEditing" (click)="deleteNode()">Delete</button>
               <button class="ms-auto mt-2 btn btn-secondary" (click)="clearNodeInput()">Clear</button>
             </div>
@@ -107,20 +107,20 @@
 
         <div *ngIf="view == 'node_cond'">
           <form class="d-flex-column" [formGroup]="condForm" novalidate>
-            <select class="form-select my-bg-grey my-2" formControlName="cond_source" [ngClass]="{'is-invalid': !condForm.controls['cond_source'].valid}" [disabled]="nodeEditing">
+            <select class="form-select my-bg-grey my-2" formControlName="cond_source" [ngClass]="{'is-invalid': !condForm.controls['cond_source'].valid}" [attr.disabled]="nodeEditing? true:null">
               <!-- <optgroup>
                 <option class="my-0" *ngIf="item.type=='task'" [value]="item.id">{{item.id}}</option>
               </optgroup> -->
-              <option ngValue="" selected>No input node</option>
+              <option [ngValue]="null">No input node</option>
               <!-- <option value="">null</option> -->
-              <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
+              <option *ngFor="let item of this.graphEditingService.getTaskNodes();" [value]="item.id">
                 <p *ngIf="item.type=='task'">{{item.id}}</p>
               </option>
             </select>
             <!-- <input class="form-control my-2" type="text" formControlName="cond_source" placeholder="node source" [ngClass]="{'is-invalid': !condForm.controls['cond_source'].valid}" [readonly]="nodeEditing"> -->
             <p *ngIf="condForm.controls['cond_source'].errors?.['notFound']" class="text-danger text-start mt-1">source node doesn't exist</p>
             <!-- <input class="form-control my-2" type="text" formControlName="cond_target" placeholder="node target" [ngClass]="{'is-invalid': !condForm.controls['cond_target'].valid}" [readonly]="nodeEditing"> -->
-            <select class="form-select my-bg-grey my-2" formControlName="cond_target" [ngClass]="{'is-invalid': !condForm.controls['cond_target'].valid}" [disabled]="nodeEditing">
+            <select class="form-select my-bg-grey my-2" formControlName="cond_target" [ngClass]="{'is-invalid': !condForm.controls['cond_target'].valid}" [attr.disabled]="nodeEditing? true:null">
               <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
                 <p *ngIf="item.type=='task'">{{item.id}}</p>
               </option>
@@ -187,7 +187,7 @@
 
             <div class="d-flex">
               <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !condForm.controls['cond_data'].valid || !condForm.controls['cond_target'].valid, 'btn-warning': nodeEditing}"
-                type="submit" (click)="tryCond()" [innerText]="nodeEditing? 'Edit':'Add'">Add</button>
+                type="button" (click)="tryCond()" [innerText]="nodeEditing? 'Edit':'Add'">Add</button>
               <button class="ms-3 mt-2 btn btn-danger" *ngIf="nodeEditing" (click)="deleteCond()">Delete</button>
               <button class="ms-auto mt-2 btn btn-secondary" (click)="clearCondInput()">Clear</button>
             </div>
@@ -198,7 +198,7 @@
           <form [formGroup]="edgeForm" novalidate class="d-flex-column">
             <!-- <input class="form-control my-2" type="text" formControlName="edge_source" placeholder="edge source" [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}" [readonly]="edgeEditing"> -->
             <select class="form-select my-bg-grey my-2" formControlName="edge_source"
-              [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}" [disabled]="edgeEditing">
+              [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}" [attr.disabled]="edgeEditing? true:null">
               <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
                 <p *ngIf="item.type=='task'">{{item.id}}</p>
               </option>
@@ -206,7 +206,7 @@
             <p *ngIf="edgeForm.controls['edge_source'].errors?.['notFound']" class="text-danger text-start mt-1">source node doesn't exist</p>
             <!-- <input class="form-control my-2" type="text" formControlName="edge_target" placeholder="edge target" [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [readonly]="edgeEditing"> -->
             <select class="form-select my-bg-grey my-2" formControlName="edge_target"
-              [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [disabled]="edgeEditing">
+              [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [attr.disabled]="edgeEditing? true:null">
               <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
                 <p *ngIf="item.type=='task'">{{item.id}}</p>
               </option>
@@ -271,7 +271,7 @@
 
 
           <div class="d-flex">
-            <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !edgeForm.valid, 'btn-warning': edgeEditing}" type="submit" (click)="tryEdge()" [innerText]="edgeEditing ? 'Edit':'Add'">Add</button>
+            <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !edgeForm.valid, 'btn-warning': edgeEditing}" type="button" (click)="tryEdge()" [innerText]="edgeEditing ? 'Edit':'Add'">Add</button>
             <button class="ms-3 mt-2 btn btn-danger" *ngIf="edgeEditing" (click)="deleteEdge()">Delete</button>
             <button class="ms-auto mt-2 btn btn-secondary" (click)="clearEdgeInput()">Clear</button>
           </div>

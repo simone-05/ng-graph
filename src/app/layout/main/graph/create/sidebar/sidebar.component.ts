@@ -435,7 +435,7 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   centerGraph() {
     this.updateGraphView.emit(2);
-    // console.log(this.nodeForm.controls["node_data"]);
+    // console.log(this.condForm.controls["cond_source"]);
   }
 
   fitGraph() {
