@@ -1,9 +1,9 @@
 <div [ngStyle]="{'height': getContentHeight()}">
-  <ngx-graph class="chart-container" [update$]="update$" [center$]="center$" [zoomToFit$]="zoomToFit$"
-    [nodes]="nodes" [links]="edges" [clusters]="clusters" [layout]="layout">
+  <ngx-graph class="chart-container" [nodes]="nodes"
+    [links]="edges" [clusters]="clusters" [update$]="update$" [layout]="layout">
 
     <ng-template #nodeTemplate let-node>
-      <svg xmlns="http://www.w3.org/2000/svg" (click)="nodeClick(node)" (mouseenter)="moreNodeDetails(node.id)"
+      <svg xmlns="http://www.w3.org/2000/svg" (mouseenter)="moreNodeDetails(node.id)"
         (mouseleave)="moreNodeDetails(0)">
         <g *ngIf="node.type=='task'">
           <g *ngIf="showNodeDetails == node.id">
@@ -52,7 +52,7 @@
 
 
     <ng-template #linkTemplate let-link>
-      <svg:g class="edge" (click)="linkClick(link)" (mouseenter)="moreEdgeDetails(link.id)"
+      <svg:g class="edge" (mouseenter)="moreEdgeDetails(link.id)"
         (mouseleave)="moreEdgeDetails(0)">
         <svg:circle width="15" height="15" fill="#000"></svg:circle>
         <svg:path class="line"
@@ -74,7 +74,7 @@
     </ng-template>
 
     <ng-template #clusterTemplate let-cluster>
-      <svg:g class="node cluster" (click)="clusterClick(cluster)" (mouseenter)="moreClusterDetails(cluster.id)" (mouseleave)="moreClusterDetails(0)">
+      <svg:g class="node cluster" (mouseenter)="moreClusterDetails(cluster.id)" (mouseleave)="moreClusterDetails(0)">
         <svg:rect x="10" y="10" rx="5" ry="5" [attr.width]="cluster.dimension.width" [attr.height]="cluster.dimension.height" stroke="#000" stroke-width="5" fill="#0005"/>
         <text x="20" y="30" font-size="16" fill="#000">OR</text>
         <g *ngIf="showClusterDetails == cluster.id">
@@ -82,12 +82,7 @@
         </g>
       </svg:g>
     </ng-template>
-    <!-- height (..)-180 -->
 
   </ngx-graph>
 
-  <!-- <foreignObject>
-    <xhtml:span class="tooltip-node">
-    </html:span>
-  </foreignObject> -->
 </div>

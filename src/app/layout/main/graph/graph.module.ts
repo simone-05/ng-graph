@@ -11,6 +11,7 @@ import { CreationViewComponent } from './create/creation-view/creation-view.comp
 import { NgxGraphModule } from '@swimlane/ngx-graph';
 import { SidebarEditComponent } from './workspace/sidebar-edit/sidebar-edit.component';
 import { GraphViewEditComponent } from './workspace/graph-view-edit/graph-view-edit.component';
+import { ViewComponent } from './view/view.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { GraphViewEditComponent } from './workspace/graph-view-edit/graph-view-e
     SidebarComponent,
     CreationViewComponent,
     SidebarEditComponent,
-    GraphViewEditComponent
+    GraphViewEditComponent,
+    ViewComponent
   ],
   imports: [
     CommonModule,

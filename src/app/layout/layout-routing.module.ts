@@ -1,3 +1,4 @@
+import { ViewComponent } from './main/graph/view/view.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ContentComponent } from './content/content.component';
@@ -9,6 +10,7 @@ const routes: Routes = [
   {path: "graph", component: ContentComponent, children: [
     {path: "list", component: ListComponent},
     {path: "create", component: CreateComponent, data: {footer: false}},
+    {path: "view/:graph_id", component: ViewComponent},
     {path: "edit/:graph_id", component: WorkspaceComponent},
     {path: "", redirectTo: "list"}
   ]},
