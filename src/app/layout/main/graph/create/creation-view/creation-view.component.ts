@@ -157,6 +157,16 @@ export class CreationViewComponent implements OnInit {
       }
     }
 
+    if (target_node && target_node.type == "clus") {
+      if (source_node && source_node.type == "cond") {
+        let task_node = this.nodes.find(node => node.id == source_node.id.split("_")[1].split("-")[1]);
+        // console.log(task_node);
+        if (task_node && this.checkAllProps(source_node, task_node)) {
+          return 2;
+        } else return 1;
+      }
+    }
+
     return 0;
   }
 
