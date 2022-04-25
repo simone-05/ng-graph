@@ -33,7 +33,7 @@
           <form class="d-flex-column" [formGroup]="nodeForm" novalidate>
             <input class="form-control my-2 " type="text" formControlName="node_id" placeholder="node id"
               [ngClass]="{'is-invalid': !nodeForm.controls['node_id'].valid}" [readonly]="nodeEditing">
-            <p class="text-danger text-start my-0" *ngIf="nodeForm.controls['node_id'].errors?.['already']">
+            <p class="text-danger text-start my-0" *ngIf="nodeForm.controls['node_id'].errors">
               {{nodeForm.controls['node_id'].errors?.['msg']}}</p>
             <input class="form-control my-2 " type="text" formControlName="node_label" placeholder="node label">
 

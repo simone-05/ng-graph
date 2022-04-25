@@ -501,6 +501,9 @@ export class SidebarComponent implements OnInit, OnChanges {
     return (control: AbstractControl): ValidationErrors | null => {
       if (control.value) {
         if (!this.nodeEditing) {
+          if (/[_-\s]/g.test(control.value)) {
+            return { illegalCharacters: true, msg: "Can't contain any _ - or whitespaces" }
+          }
           if (this.graph.nodes.filter(node => node.type=="task").find(nodo => nodo.id == control.value)) {
             return { already: true, msg: "Already exists a node with this id" };
           }
