@@ -1,5 +1,11 @@
+<<<<<<< HEAD:src/app/layout/main/graph/edit/sidebar-edit/sidebar-edit.component.html
 <div class="row mx-3" [ngStyle]="{'height': getSidebarHeight()}">
   <div class="col-12">
+=======
+<form [formGroup]="graphInitForm" novalidate *ngIf="isCreated;else creation" class="mx-3">
+  <!-- AGGIUNGI ! -->
+  <h3 class="py-4 text-white">Graph details</h3>
+>>>>>>> 69b5db5 (creo cartella per componenti flow-nodes):src/app/layout/main/graph/create/sidebar/sidebar.component.html
 
     <div class="d-flex align-items-center">
       <h3 class="ms-1 my-3 text-white" style="overflow-x: auto;">{{graphEditingService.graph.name}}</h3>
@@ -13,6 +19,7 @@
           <option selected value="node_task">Node task</option>
           <option value="node_cond">Node condition</option>
           <option value="edge">Edge</option>
+          <option value="node_inject">Node Inject</option>
         </select>
       </div>
 
@@ -78,6 +85,7 @@
                     <img src="../../../../../../assets/images/plus-dark.svg" alt="add data field">
                     <p class="m-0 ms-1" style="color: #666">Add data field</p>
                   </div>
+<<<<<<< HEAD:src/app/layout/main/graph/edit/sidebar-edit/sidebar-edit.component.html
                   <!-- <div class="row px-4 pb-2" [formGroup]="nodePropForm" novalidate *ngIf="this.x">
                             <div class="col-5 p-0 ps-1 pe-1">
                               <input type="text" class="form-control" formControlName="node_prop_name" placeholder="name" [ngClass]="{'is-invalid': nodePropForm.controls['node_prop_name'].errors?.['msg']}">
@@ -90,6 +98,8 @@
                             </div>
                             <small class="text-danger text-start my-0" *ngIf="!nodePropForm.valid">{{nodePropForm.controls['node_prop_name'].errors?.['msg']}}</small>
                           </div> -->
+=======
+>>>>>>> 69b5db5 (creo cartella per componenti flow-nodes):src/app/layout/main/graph/create/sidebar/sidebar.component.html
                 </div>
               </div>
             </div>
@@ -113,6 +123,15 @@
                       </optgroup> -->
               <option [ngValue]="null">No input node</option>
               <!-- <option value="">null</option> -->
+<<<<<<< HEAD:src/app/layout/main/graph/edit/sidebar-edit/sidebar-edit.component.html
+=======
+              <option *ngFor="let item of this.graphEditingService.getTaskNodes();" [value]="item.id">
+                <p *ngIf="item.type=='task'">{{item.id}}</p>
+              </option>
+            </select>
+            <p *ngIf="condForm.controls['cond_source'].errors?.['notFound']" class="text-danger text-start mt-1">source node doesn't exist</p>
+            <select class="form-select my-bg-grey my-2" formControlName="cond_target" [ngClass]="{'is-invalid': !condForm.controls['cond_target'].valid}" [attr.disabled]="nodeEditing? true:null">
+>>>>>>> 69b5db5 (creo cartella per componenti flow-nodes):src/app/layout/main/graph/create/sidebar/sidebar.component.html
               <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
                 <p *ngIf="item.type=='task'">{{item.id}}</p>
               </option>
@@ -171,6 +190,7 @@
                     <img src="../../../../../../assets/images/plus-dark.svg" alt="add data field">
                     <p class="m-0 ms-1" style="color: #666">Add data field</p>
                   </div>
+<<<<<<< HEAD:src/app/layout/main/graph/edit/sidebar-edit/sidebar-edit.component.html
                   <!-- <div class="row px-4 pb-2" [formGroup]="nodePropForm" novalidate>
                             <div class="col-5 p-0 ps-1 pe-1">
                               <input type="text" class="form-control" formControlName="node_prop_name" placeholder="name"
@@ -187,6 +207,8 @@
                             <small class="text-danger text-start my-0"
                               *ngIf="!nodePropForm.valid">{{nodePropForm.controls['node_prop_name'].errors?.['msg']}}</small>
                           </div> -->
+=======
+>>>>>>> 69b5db5 (creo cartella per componenti flow-nodes):src/app/layout/main/graph/create/sidebar/sidebar.component.html
                 </div>
               </div>
             </div>
@@ -205,16 +227,19 @@
 
         <div *ngIf="view == 'edge'">
           <form [formGroup]="edgeForm" novalidate class="d-flex-column">
-            <!-- <input class="form-control my-2" type="text" formControlName="edge_source" placeholder="edge source" [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}" [readonly]="edgeEditing"> -->
             <select class="form-select my-bg-grey my-2" formControlName="edge_source"
               [ngClass]="{'is-invalid': !edgeForm.controls['edge_source'].valid}" [attr.disabled]="edgeEditing?true:null">
               <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
                 <p *ngIf="item.type=='task'">{{item.id}}</p>
               </option>
             </select>
+<<<<<<< HEAD:src/app/layout/main/graph/edit/sidebar-edit/sidebar-edit.component.html
             <p *ngIf="edgeForm.controls['edge_source'].errors?.['notFound']" class="text-danger text-start mt-1">source node
               doesn't exist</p>
             <!-- <input class="form-control my-2" type="text" formControlName="edge_target" placeholder="edge target" [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [readonly]="edgeEditing"> -->
+=======
+            <p *ngIf="edgeForm.controls['edge_source'].errors?.['notFound']" class="text-danger text-start mt-1">source node doesn't exist</p>
+>>>>>>> 69b5db5 (creo cartella per componenti flow-nodes):src/app/layout/main/graph/create/sidebar/sidebar.component.html
             <select class="form-select my-bg-grey my-2" formControlName="edge_target"
               [ngClass]="{'is-invalid': !edgeForm.controls['edge_target'].valid}" [attr.disabled]="edgeEditing?true: null">
               <option *ngFor="let item of this.graphEditingService.getTaskNodes()" [value]="item.id">
@@ -237,6 +262,7 @@
               <p *ngIf="edgeForm.errors?.['weightError']" class="text-danger text-start mt-1">{{edgeForm.errors?.['msg']}}</p>
             </div>
 
+<<<<<<< HEAD:src/app/layout/main/graph/edit/sidebar-edit/sidebar-edit.component.html
             <!-- <div class="accordion text-dark">
                       <div class="accordion-item">
                         <div class="accordion-header px-3 btn col-12 d-flex align-items-center" (click)="collapse.toggle()"
@@ -288,7 +314,18 @@
               <button class="ms-3 mt-2 btn btn-danger" *ngIf="edgeEditing" (click)="deleteEdge()">Delete</button>
               <button class="ms-auto mt-2 btn btn-secondary" (click)="clearEdgeInput()">Clear</button>
             </div>
+=======
+          <div class="d-flex">
+            <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !edgeForm.valid, 'btn-warning': edgeEditing}" type="button" (click)="tryEdge()" [innerText]="edgeEditing ? 'Edit':'Add'">Add</button>
+            <button class="ms-3 mt-2 btn btn-danger" *ngIf="edgeEditing" (click)="deleteEdge()">Delete</button>
+            <button class="ms-auto mt-2 btn btn-secondary" (click)="clearEdgeInput()">Clear</button>
+          </div>
+>>>>>>> 69b5db5 (creo cartella per componenti flow-nodes):src/app/layout/main/graph/create/sidebar/sidebar.component.html
           </form>
+        </div>
+
+        <div *ngIf="view == 'node_inject'">
+          <app-inject-node></app-inject-node>
         </div>
 
       </div>
