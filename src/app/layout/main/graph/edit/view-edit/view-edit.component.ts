@@ -1,27 +1,23 @@
 import { GraphEditingService, Node, Edge } from '../../graph-editing.service';
-import { Component, OnInit, SimpleChanges, OnChanges, Input, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, SimpleChanges, OnChanges, Input, EventEmitter, Output, AfterViewInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import * as _ from 'lodash';
 import { ClusterNode, DagreClusterLayout } from '@swimlane/ngx-graph';
 
 @Component({
-  selector: 'app-creation-view',
-  templateUrl: './creation-view.component.html',
-  styleUrls: ['./creation-view.component.scss']
+  selector: 'app-view-edit',
+  templateUrl: './view-edit.component.html',
+  styleUrls: ['./view-edit.component.scss']
 })
-export class CreationViewComponent implements OnInit {
+export class ViewEditComponent implements OnInit {
   nodes: Node[] = [
-    // {id: "1", label: 'nodo1', type: "task", properties: {id: "1", name: "b", value: "1"}},
-    // {id: "2", label: 'nodo2', type: "task", properties: {id: "1", name: "a", value: "1"}},
-    // {id: "3", label: 'nodo3', type: "cond", properties: {id: "1", name: "a", value: "1"}},
+    // {id: "1", label: 'nodo1', type: "cond"},
+    // {id: "2", label: 'nodo2', type: "task"}
   ];
   edges: Edge[] = [
-    // {id: "_1-3", label: "arco1", source: "1", target: "3", weight: 2},
-    // {id: "_3-2", label: "arco2", source: "3", target: "2", weight: 3},
+    // {id: "1", label: "arco1", source: "1", target: "2"}
   ];
-  clusters: ClusterNode[] = [
-    // {id: "1", label: "ci", childNodeIds: ["1", "2"]},
-  ];
+  clusters: ClusterNode[] = [];
   layout: any;
 
   @Input() update: number = 0;
@@ -30,7 +26,6 @@ export class CreationViewComponent implements OnInit {
   zoomToFit$: Subject<boolean> = new Subject();
   @Output() selectedNode: any = new EventEmitter<any>();
   @Output() selectedEdge: any = new EventEmitter<any>();
-  @Output() selectedCluster: any = new EventEmitter<any>();
 
   Object = Object;
 
@@ -70,13 +65,13 @@ export class CreationViewComponent implements OnInit {
         break;
       default:
         break;
-    }
+      }
   }
 
-  getContentHeight() : string {
-    const header_height: number|undefined = document.getElementsByTagName("app-header")[0].firstElementChild?.clientHeight||67;
-    const viewport_height: number|undefined = window.innerHeight||290;
-    return (viewport_height - header_height).toString()+"px";
+  getContentHeight(): string {
+    const header_height: number | undefined = document.getElementsByTagName("app-header")[0].firstElementChild?.clientHeight || 67;
+    const viewport_height: number | undefined = window.innerHeight || 290;
+    return (viewport_height - header_height).toString() + "px";
   }
 
   updateGraph() {
@@ -105,7 +100,7 @@ export class CreationViewComponent implements OnInit {
   }
 
   clusterClick(cluster: any) {
-    this.selectedCluster.emit(cluster);
+    // this.selectedCluster.emit(cluster);
   }
 
   //id è il numero del nodo se il mouse è sopra, 0 se il mouse esce dal nodo
@@ -126,13 +121,13 @@ export class CreationViewComponent implements OnInit {
 
     //prendo i nodi interni al cluster
     if (cluster.childNodeIds) {
-      inner_nodes = cluster.childNodeIds.filter(id => id.split("_")[0]=="c").map(id => this.graphEditingService.getNode(id));
+      inner_nodes = cluster.childNodeIds.filter(id => id.split("_")[0] == "c").map(id => this.graphEditingService.getNode(id));
     }
 
     // console.log(inner_nodes);
 
     let flag = false;
-    inner_nodes.forEach((node: Node) =>{
+    inner_nodes.forEach((node: Node) => {
       if (this.checkAllProps(node, task_node)) {
         flag = true;
         return;
@@ -144,13 +139,13 @@ export class CreationViewComponent implements OnInit {
 
   checkConditions(edge: Edge): number { //ritorna: 0 arco grigio, 1 arco rosso, 2 arco verde
     //salvo nodo sorgente
-    const source_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.source);
+    const source_node: Node | undefined = this.nodes.find(nodo => nodo.id == edge.source);
     //salvo nodo destinazione
-    const target_node: Node|undefined = this.nodes.find(nodo => nodo.id == edge.target);
+    const target_node: Node | undefined = this.nodes.find(nodo => nodo.id == edge.target);
 
     if (target_node && target_node.type == "task") {
       if (source_node && source_node.type == "clus") {
-        let clus = this.clusters.find(clus => clus.id == "clus_"+source_node.id.split("_")[1]);
+        let clus = this.clusters.find(clus => clus.id == "clus_" + source_node.id.split("_")[1]);
         if (clus && this.checkClusterConditions(clus, target_node)) {
           return 2;
         } else return 1;

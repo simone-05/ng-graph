@@ -1,6 +1,6 @@
-import { GraphEditingService, Node, Edge, Graph } from './../../graph-editing.service';
+import { GraphEditingService, Node, Edge, Graph } from '../../graph-editing.service';
 import { Router } from '@angular/router';
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ClusterNode } from '@swimlane/ngx-graph';
 
@@ -34,6 +34,8 @@ export class SidebarEditComponent implements OnInit, OnChanges {
   edgeEditing: boolean = false;
   clusterEditing: boolean = false;
 
+  Object = Object;
+
   constructor(public graphEditingService: GraphEditingService, private formBuilder: FormBuilder, private router: Router) {
     this.view = "node_task";
     this.isCollapsed = true;
@@ -51,6 +53,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
       node_type: null,
       node_data: this.formBuilder.array([]),
     });
+    // this.nodeForm.valueChanges.subscribe(()=>console.log(this.nodeForm.controls["node_data"]));
 
     this.nodePropForm = this.formBuilder.group({
       node_prop_name: [null, [Validators.required, this.checkNodeProperty()]],
@@ -108,7 +111,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
     // }
   }
 
-  getSidebarHeight(): string {
+  getSidebarHeight() : string {
     const header_height: number | undefined = document.getElementsByTagName("app-header")[0].firstElementChild?.clientHeight || 67;
     const viewport_height: number | undefined = window.innerHeight || 290;
     return (viewport_height - header_height).toString() + "px";
@@ -130,7 +133,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
     return this.clusterForm.get("cluster_nodes") as FormArray;
   }
 
-  // get edgeDataForm(): FormArray {
+  // get edgeDataForm() : FormArray {
   //   return this.edgeForm.get("edge_data") as FormArray;
   // }
 

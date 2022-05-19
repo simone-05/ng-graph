@@ -1,13 +1,13 @@
-import { GraphEditingService } from './../graph-editing.service';
+import { GraphEditingService } from '../graph-editing.service';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
-  selector: 'app-workspace',
-  templateUrl: './workspace.component.html',
-  styleUrls: ['./workspace.component.scss']
+  selector: 'app-edit',
+  templateUrl: './edit.component.html',
+  styleUrls: ['./edit.component.scss']
 })
-export class WorkspaceComponent implements OnInit {
+export class EditComponent implements OnInit {
   graph_switch = 0;
   sidebar_switch = 0;
   graph_id = 0;
