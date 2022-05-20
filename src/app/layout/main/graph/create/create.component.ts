@@ -59,13 +59,12 @@ export class CreateComponent implements OnInit {
       let graph_desc = this.editGraphForm.controls["graph_desc"].value;
       this.graphEditingService.createGraph(graph_name, graph_desc);
       this.graphEditingService.saveGraphInStorage();
-        let key = -1;
-        for (let i = 0; i < localStorage.length; i++) {
-          const element = localStorage.key(i);
-          if (element == graph_name) key = i;
-        }
-        if (key > 0)
-        this.router.navigate(["/app/graph/edit/"+(key+1)]);
+      let key = -1;
+      for (let i = 0; i < localStorage.length; i++) {
+        const element = localStorage.key(i);
+        if (element == graph_name) key = i;
+      }
+      if (key != -1) this.router.navigate(["/app/graph/edit/"+(key+1)]);
     }
   }
 }

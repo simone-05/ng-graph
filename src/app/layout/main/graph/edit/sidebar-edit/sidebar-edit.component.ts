@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ClusterNode } from '@swimlane/ngx-graph';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-sidebar-edit',
@@ -28,6 +29,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
   @Input() selectedEdge?: Edge;
   @Input() selectedCluster?: ClusterNode;
   @Input() forcedChange: any;
+  nodeSelected$: BehaviorSubject<Node | any> = new BehaviorSubject<Node | any>(null);
 
   graphNameAlready: boolean = false;
   nodeEditing: boolean = false;
@@ -100,6 +102,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (this.forcedChange == 1) {
       this.selectedNodeInputChange(this.selectedNode);
+      this.nodeSelected$.next(this.selectedNode);
     }
 
     if (this.forcedChange == 2) {
@@ -254,6 +257,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
     } else {
       this.graphEditingService.addEdge(edge);
     }
+    this.passContent(edge_source, edge_target);
     this.clearEdgeInput();
   }
 
@@ -342,6 +346,10 @@ export class SidebarEditComponent implements OnInit, OnChanges {
 
   selectedNodeInputChange(node: any) {
     if (node.type == "clus") return;
+    if (node.type != "cond" && node.type != "task") {
+      this.view = "node_"+node.type;
+      return;
+    }
     this.clearNodeInput();
     this.clearCondInput();
     this.nodeEditing = true;
@@ -365,6 +373,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
         });
         this.nodeDataForm.push(dato);
       });
+      this.view = "node_task";
     } else if (node.type == "cond") {
       this.condForm.controls["cond_id"].setValue(node.id);
       this.condForm.controls["cond_label"].setValue(node.label);
@@ -379,8 +388,8 @@ export class SidebarEditComponent implements OnInit, OnChanges {
         });
         this.condDataForm.push(dato);
       });
+      this.view = "node_cond";
     }
-    this.view = (node.type == "cond" ? "node_cond" : "node_task");
   }
 
   selectedEdgeInputChange(edge: any) {
@@ -400,6 +409,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
     //   this.edgeDataForm.push(dato);
     // });
     this.view = "edge";
+    this.passContent(edge.source, edge.target);
   }
 
   selectedClusterInputChange(cluster: any) {
@@ -446,7 +456,6 @@ export class SidebarEditComponent implements OnInit, OnChanges {
 
   centerGraph() {
     this.updateGraphView.emit(2);
-    // console.log(this.nodeForm);
   }
 
   fitGraph() {
@@ -509,7 +518,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
           if (/[_-\s]/g.test(control.value)) {
             return { illegalCharacters: true, msg: "Can't contain any _ - or whitespaces"}
           }
-          if (this.graph.nodes.filter(node => node.type == "task").find(nodo => nodo.id == control.value)) {
+          if (this.graph.nodes.filter(node => node.type != "cond" && node.type != "clus").find(nodo => nodo.id == control.value)) {
             return { already: true, msg: "Already exists a node with this id" };
           }
         }
@@ -646,7 +655,7 @@ export class SidebarEditComponent implements OnInit, OnChanges {
   checkCondNodeTask(): ValidatorFn {
     return (control) => {
       if (control.value) {
-        if (!this.graph.nodes.filter(node => node.type == "task").find(nodo => nodo.id == control.value)) {
+        if (!this.graph.nodes.filter(node => node.type != "clus" && node.type != "cond").find(nodo => nodo.id == control.value)) {
           return { notFound: true };
         }
       }
@@ -695,6 +704,18 @@ export class SidebarEditComponent implements OnInit, OnChanges {
       // }
       return null;
     }
+  }
+
+  passContent(source: any, target: any) : boolean {
+    source = this.graphEditingService.getNode(source);
+    target = this.graphEditingService.getNode(target);
+    if (target.type == "cond" || target.type == "clus" || target.type == "task") return false;
+
+    if (source.properties.filter((prop: any) => prop.name == "output")[0] == null) return false;
+    const contentToSend = source.properties.filter((prop:any) => prop.name == "output")[0].value;
+    let input = {id: target.properties.length+1, name: "input", value: contentToSend};
+    target.properties.push(input);
+    return true;
   }
 
 }

@@ -3,6 +3,7 @@ import { Component, OnInit, SimpleChanges, OnChanges, Input, EventEmitter, Outpu
 import { Subject } from 'rxjs';
 import * as _ from 'lodash';
 import { ClusterNode, DagreClusterLayout } from '@swimlane/ngx-graph';
+import { FlowNode } from 'src/app/shared/flow_nodes-interface';
 
 @Component({
   selector: 'app-view-edit',
@@ -28,6 +29,7 @@ export class ViewEditComponent implements OnInit {
   @Output() selectedEdge: any = new EventEmitter<any>();
 
   Object = Object;
+  String = String;
 
   showNodeDetails: number;
   showEdgeDetails: number;
@@ -42,9 +44,13 @@ export class ViewEditComponent implements OnInit {
     this.graphEditingService.graph$.subscribe((element) => {
       if (element) {
         this.updateGraph();
-        // console.log(this.nodes);
-        // console.log(this.edges);
-        // console.log(this.clusters);
+        if (element.target) {
+          const node: any = this.graphEditingService.getNode(element.target);
+          // if (node.input || node.content) {
+            if (node) {
+            node.processOutput();
+          }
+        }
       }
     });
   }

@@ -2,6 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { ClusterNode, NgxGraphModule } from '@swimlane/ngx-graph';
 import { DatePipe } from '@angular/common';
+import { FlowNode } from 'src/app/shared/flow_nodes-interface';
 
 @Injectable({
   providedIn: 'root'
@@ -167,7 +168,7 @@ export class GraphEditingService {
     this.graph$.next(this.graph);
   }
 
-  getNode(id: string): Node|undefined {
+  getNode(id: string): Node|FlowNode|undefined {
     return this.graph.nodes.find(nodo => nodo.id == id);
   }
 
@@ -184,8 +185,9 @@ export class GraphEditingService {
     return conds;
   }
 
-  getTaskNodes(): any[] {
-    return this.graph.nodes.filter(node => node.type == "task")||[];
+  //Nodi task, inject, ... (non condizione)
+  getNodes(): any[] {
+    return this.graph.nodes.filter(node => node.type != "cond" && node.type != "clus")||[];
   }
 }
 

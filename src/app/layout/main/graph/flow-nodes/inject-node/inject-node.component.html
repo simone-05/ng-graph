@@ -5,7 +5,6 @@
     <input class="form-control my-2 " type="text" formControlName="node_label" placeholder="node label">
     <textarea class="my-2 form-control" placeholder="Content" formControlName="node_content"></textarea>
 
-
     <div class="d-flex">
       <button class="mt-2 btn btn-primary" [ngClass]="{'disabled': !injectForm.valid, 'btn-warning': nodeEditing}" type="button" (click)="tryNode()" [innerText]="nodeEditing? 'Edit':'Add'">Add</button>
       <button class="ms-3 mt-2 btn btn-danger" *ngIf="nodeEditing" (click)="deleteNode()">Delete</button>
